@@ -40,7 +40,7 @@ root.columnconfigure(0, weight = 1)
 root.rowconfigure(0, weight = 1)
 
 #################################################################################################################################
-# row 0
+# row 0 path
 #################################################################################################################################
 ttk.Label(mainframe, text = "源文件路径:").grid(row = 0, column = 0, sticky = E, padx = 5, pady = 5)
 
@@ -53,11 +53,11 @@ def selectSrcDir():
     srcPath.set(filepath)
     #destPath.set(filepath + "/" + os.path.basename(filepath) + "_Output")
     if(os.path.exists(filepath)):
-        destPath.set(filepath + "_Output")
+        destPath.set(filepath + "_OUTPUT")
 ttk.Button(mainframe, text = "选择文件夹", command = selectSrcDir).grid(row = 0, column = 2, sticky = W, padx = 5, pady = 5)
 
 #################################################################################################################################
-# row 1
+# row 1 path
 #################################################################################################################################
 ttk.Label(mainframe, text = "目标文件路径:").grid(row = 1, column = 0, sticky = E, padx = 5, pady = 5)
 
@@ -77,10 +77,10 @@ ttk.Label(mainframe, text = "功能选项:").grid(row = 2, column = 0, sticky = 
 
 renameFlag = StringVar()
 renameFlag.set(1)
-rename_checkbutton = ttk.Checkbutton(mainframe, text = "重命名", variable = renameFlag)
+rename_checkbutton = ttk.Checkbutton(mainframe, text = "重命名", variable = renameFlag, state = "disable")
 rename_checkbutton.grid(row = 2, column = 2, sticky = (W, E), padx = 5)
 
-ttk.Label(mainframe, text = "1. 重命名照片为拍摄时间_拍摄设备").grid(row = 2, column = 1, sticky = W, padx = 5, pady = 5)
+ttk.Label(mainframe, text = "1. 重命名照片为拍摄时间_拍摄设备 (基础功能，必选)").grid(row = 2, column = 1, sticky = W, padx = 5, pady = 5)
 
 compressFlag = StringVar()
 compress_checkbutton = ttk.Checkbutton(mainframe, text = "压缩图像", variable = compressFlag)
@@ -88,15 +88,20 @@ compress_checkbutton.grid(row = 3, column = 2, sticky = (W, E), padx = 5)
 ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 3, column = 1, sticky = W, padx = 5)
 
 #################################################################################################################################
-# row 5 log
+# row 5 log window
 #################################################################################################################################
 ttk.Label(mainframe, text = "日志输出:").grid(row = 5, column = 0, sticky = (N, E), padx = 5, pady = 10)
 
 log_text = Text(mainframe, width = 60, height = 10, state = "disabled")
 log_text.grid(row = 5, column = 1, sticky = (W, E), padx = 5, pady = 10)#, columnspan = 2) 
 
-# pl = PrintLogger(log_text)  # create instance of file like object
-# sys.stdout = pl             # replace sys.stdout with our object
+logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.yview)
+logText_scrollbar.grid(row = 5, column = 1, sticky = (E, N, S), padx = 5, pady = 10)
+
+log_text.configure(yscrollcommand = logText_scrollbar.set)
+
+pl = PrintLogger(log_text) 
+sys.stdout = pl             
 
 #################################################################################################################################
 # row 5 execute
@@ -116,31 +121,43 @@ def cpRenImage(srcFolder, destfolder, extName):
     filecounter = 0
     for srcName in glob.glob(srcPathIncExtName):
         destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
-        print(srcName + "=============>" + destName)
+
         if os.path.exists(destName):
             msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
             if msgBoxReturn == "yes":
-                os.system("copy  " + srcName + " " + destName) 
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : yes")
+                os.system("copy  " + srcName + " " + destName)                 
                 filecounter += 1
             else:
-                pass
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : no")
         else:
+            print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : yes")
             os.system("copy  " + srcName + " " + destName) 
             filecounter += 1
     return filecounter
+
+def renameAll(src, dest):
+    jpgConter = cpRenImage(src, dest, "jpg")
+    jpepConter = cpRenImage(src, dest, "jpeg")
+    pngConter = cpRenImage(src, dest, "png")
+
+    if jpgConter > 0:
+        print("处理" + str(jpgConter) + "个jpg文件") 
+    if jpepConter > 0:
+        print("处理" + str(jpepConter) + "个jpeg文件")
+    if pngConter > 0:
+        print("处理" + str(pngConter) + "个png文件")
 
 def process():  
     # print(renameFlag.get())
     # print(compressFlag.get())    
     log_text.configure(state = "normal")
+
     log_text.delete('1.0', END)    
  
     ### path
     srcPath = srcPath_entry.get()
     destPath = destPath_entry.get()
-
-    # log_text.insert('end', "srcPath = " + srcPath + "\n")    
-    # log_text.insert('end', "destPath = " + destPath + "\n")  
 
     checkPath(srcPath)
     if destPath != srcPath + "_Output":
@@ -149,27 +166,13 @@ def process():
         if (os.path.exists(destPath) == False):
             os.makedirs(destPath)
 
+    # check if source folder is empty
     if os.listdir(srcPath) == False:
         messagebox.showerror(title = "错误", message = "目标文件夹\n" + srcPath + "\内没有文件！")    
 
-    #jpeg
-    jpepConter = cpRenImage(srcPath, destPath, "jpeg")
-    if jpepConter > 0:
-        log_text.insert('end', "处理" + str(jpepConter) + "个jpeg文件\n")
-    #png
-    pngConter = cpRenImage(srcPath, destPath, "png")
-    if pngConter > 0:
-        log_text.insert('end', "处理" + str(pngConter) + "个png文件\n")
-    #jpg
-    jpgConter = cpRenImage(srcPath, destPath, "jpg")
-    if jpgConter > 0:
-        log_text.insert('end', "处理" + str(jpgConter) + "个jpg文件\n") 
+    renameAll(srcPath, destPath)
 
     log_text.configure(state = "disable")
-
-
-    #print(imgProcess.checkSrcFolder(srcPath))
-    #print(imgProcess.findJpg(srcPath))
 
 ttk.Button(mainframe, text = "执行操作", command = process).grid(row = 5, column = 2, sticky = N, padx = 5, pady = 10)
 
