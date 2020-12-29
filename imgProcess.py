@@ -1,39 +1,35 @@
-import glob
-import datetime
-import os
 import time
 from PIL import Image
 
+#####################################################################################
+# rename file according shot time and device
+#####################################################################################
+def renameAccExif(jpgFile):
+    # a. read exif
+    image = Image.open(jpgFile)
+    dictExif = image.getexif()    
+    #print("DateTimeOriginal:", dictExif.get(36867), ", Model:", dictExif.get(272))    
+    DateTimeOriginal = str(dictExif.get(36867))
+    CameraModel = str(dictExif.get(272))
+    image.close()
 
-#####################################################################################
-# check if srcFolder is empty
-#####################################################################################
-def checkSrcFolder(srcFolder):
-    if not os.listdir(srcFolder):
-        return 0
+    # b. new filename part 1: time    
+    filenameRaw = ""
+    if DateTimeOriginal != "None":
+        filenameRaw = DateTimeOriginal
     else:
-        return 1
+        fileModTime = time.localtime(os.stat(jpgFile).st_mtime)
+        filenameRaw = time.strftime("%Y%m%d_%H%M%S", fileModTime)
 
-#####################################################################################
-# find jpeg
-#####################################################################################
-def findJpeg(srcFolder):
-    srcPathIncJpeg = srcFolder + "\\*.jpeg"
-    filecounter = 0
-    for filepath in glob.glob(srcPathIncJpeg):
-        prePath, ext = os.path.splitext(filepath)
-        #os.rename(filepath, prePath + ".jpg")
-        filecounter += 1
-    #print(filecounter, "jpeg ==> jpg, done")
-    return filecounter
+    #print(filenameRaw)    
 
-#####################################################################################
-# 3. save original jpg filepathes in a list
-#####################################################################################
-# srcPathIncJpg = srcFolder + "\\*.jpg"
-# orgJpgList = glob.glob(srcPathIncJpg)
-def findJpg(srcFolder):
-    srcPathIncJpg = srcFolder + "\\*.jpg"
-    jpgList = glob.glob(srcPathIncJpg)
-    return len(jpgList)
-        
+    filenameRaw = filenameRaw.replace(':','')
+    filenameRaw = filenameRaw.replace(' ','_')
+
+    # c. new filename part 2: device part
+    if CameraModel != "None":
+        filenameRaw = filenameRaw + "_" + CameraModel
+    filenameRaw = filenameRaw.replace(' ','')
+    
+    filenameRaw += ".jpg"
+    return filenameRaw
