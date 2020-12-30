@@ -34,3 +34,11 @@ def renameAccExif(jpgFile):
     
     filenameRaw += ".jpg"
     return filenameRaw
+
+
+#####################################################################################
+# rename and compressed image (80%)
+#####################################################################################
+def renAndcompImg(src, dest):
+    img = Image.open(src)
+    img.save(dest, quality = 80, optimize = True)

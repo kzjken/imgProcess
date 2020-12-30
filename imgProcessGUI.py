@@ -32,7 +32,7 @@ class PrintLogger(): # create file like object
 #------------------------------------------------------------- tkinter ---------------------------------------------------------#
 #################################################################################################################################
 root = Tk()
-root.title("Photo Conventer [Z.Kang]")
+root.title("Image Conventer [Z.Kang]")
 
 mainframe = ttk.Frame(root, padding = "4 3 12 12")
 mainframe.grid(column = 0, row = 0, sticky = (N, W, E, S))
@@ -125,14 +125,22 @@ def cpRenImage(srcFolder, destfolder, extName):
         if os.path.exists(destName):
             msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
             if msgBoxReturn == "yes":
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : done")
-                os.system("copy  " + srcName + " " + destName)                 
+                if compressFlag.get() == '1':
+                    imgProcess.renAndcompImg(srcName, destName)
+                    print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
+                else:
+                    os.system("copy  " + srcName + " " + destName)      
+                    print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
                 filecounter += 1
             else:
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : ")
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : canceled")
         else:
-            print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : done")
-            os.system("copy  " + srcName + " " + destName) 
+            if compressFlag.get() == '1':
+                imgProcess.renAndcompImg(srcName, destName)
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
+            else:
+                os.system("copy  " + srcName + " " + destName)      
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")    
             filecounter += 1
     return filecounter
 
@@ -142,11 +150,11 @@ def renameAll(src, dest):
     pngConter = cpRenImage(src, dest, "png")
 
     if jpgConter > 0:
-        print("处理" + str(jpgConter) + "个jpg文件") 
+        print("processed " + str(jpgConter) + " jpg files") 
     if jpepConter > 0:
-        print("处理" + str(jpepConter) + "个jpeg文件canceled")
+        print("processed " + str(jpepConter) + " jpeg files")
     if pngConter > 0:
-        print("处理" + str(pngConter) + "个png文件")
+        print("processed " + str(pngConter) + " png files")
 
 def process():  
     # print(renameFlag.get())
@@ -171,6 +179,9 @@ def process():
         messagebox.showerror(title = "错误", message = "目标文件夹\n" + srcPath + "\内没有文件！")    
 
     renameAll(srcPath, destPath)
+
+    # if compressFlag.get() == '1':
+    #     renAndcompImg(destPath) 
 
     log_text.configure(state = "disable")
 
