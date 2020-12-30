@@ -92,7 +92,7 @@ ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 
 #################################################################################################################################
 ttk.Label(mainframe, text = "日志输出:").grid(row = 5, column = 0, sticky = (N, E), padx = 5, pady = 10)
 
-log_text = Text(mainframe, width = 60, height = 10, state = "disabled")
+log_text = Text(mainframe, width = 80, height = 10, state = "disabled")
 log_text.grid(row = 5, column = 1, sticky = (W, E), padx = 5, pady = 10)#, columnspan = 2) 
 
 logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.yview)
@@ -125,13 +125,13 @@ def cpRenImage(srcFolder, destfolder, extName):
         if os.path.exists(destName):
             msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
             if msgBoxReturn == "yes":
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : yes")
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : done")
                 os.system("copy  " + srcName + " " + destName)                 
                 filecounter += 1
             else:
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : no")
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : ")
         else:
-            print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : yes")
+            print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : done")
             os.system("copy  " + srcName + " " + destName) 
             filecounter += 1
     return filecounter
@@ -144,7 +144,7 @@ def renameAll(src, dest):
     if jpgConter > 0:
         print("处理" + str(jpgConter) + "个jpg文件") 
     if jpepConter > 0:
-        print("处理" + str(jpepConter) + "个jpeg文件")
+        print("处理" + str(jpepConter) + "个jpeg文件canceled")
     if pngConter > 0:
         print("处理" + str(pngConter) + "个png文件")
 
