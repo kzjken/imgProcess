@@ -93,7 +93,7 @@ ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 
 #################################################################################################################################
 ttk.Label(mainframe, text = "日志输出:").grid(row = 5, column = 0, sticky = (N, E), padx = 5, pady = 10)
 
-log_text = Text(mainframe, width = 90, height = 10, state = "disabled")
+log_text = Text(mainframe, width = 90, height = 15, state = "disabled")
 log_text.grid(row = 5, column = 1, sticky = (W, E), padx = 5, pady = 10)#, columnspan = 2) 
 
 logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.yview)
@@ -184,7 +184,7 @@ def process():
 
     # if compressFlag.get() == '1':
     #     renAndcompImg(destPath) 
-
+    log_text.see(END)
     log_text.configure(state = "disable")
 
 ttk.Button(mainframe, text = "执行操作", command = process).grid(row = 5, column = 2, sticky = N, padx = 5, pady = 10)
@@ -200,4 +200,4 @@ ttk.Button(mainframe, text = "执行操作", command = process).grid(row = 5, co
 root.mainloop()
 
 
-#pyinstaller -F imgProcessGUI.py
+#pyinstaller --noconsole imgProcessGUI.py
