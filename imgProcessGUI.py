@@ -83,6 +83,7 @@ rename_checkbutton.grid(row = 2, column = 2, sticky = (W, E), padx = 5)
 ttk.Label(mainframe, text = "1. 重命名照片为拍摄时间_拍摄设备 (基础功能，必选)").grid(row = 2, column = 1, sticky = W, padx = 5, pady = 5)
 
 compressFlag = StringVar()
+compressFlag.set(1)
 compress_checkbutton = ttk.Checkbutton(mainframe, text = "压缩图像", variable = compressFlag)
 compress_checkbutton.grid(row = 3, column = 2, sticky = (W, E), padx = 5)
 ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 3, column = 1, sticky = W, padx = 5)
@@ -92,7 +93,7 @@ ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 
 #################################################################################################################################
 ttk.Label(mainframe, text = "日志输出:").grid(row = 5, column = 0, sticky = (N, E), padx = 5, pady = 10)
 
-log_text = Text(mainframe, width = 80, height = 10, state = "disabled")
+log_text = Text(mainframe, width = 90, height = 10, state = "disabled")
 log_text.grid(row = 5, column = 1, sticky = (W, E), padx = 5, pady = 10)#, columnspan = 2) 
 
 logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.yview)
@@ -149,6 +150,7 @@ def renameAll(src, dest):
     jpepConter = cpRenImage(src, dest, "jpeg")
     pngConter = cpRenImage(src, dest, "png")
 
+    print("=======================================================================")
     if jpgConter > 0:
         print("processed " + str(jpgConter) + " jpg files") 
     if jpepConter > 0:

@@ -5,9 +5,9 @@ from PIL import Image
 #####################################################################################
 # rename file according shot time and device
 #####################################################################################
-def renameAccExif(jpgFile):
+def renameAccExif(imageName):
     # a. read exif
-    image = Image.open(jpgFile)
+    image = Image.open(imageName)
     dictExif = image.getexif()    
     #print("DateTimeOriginal:", dictExif.get(36867), ", Model:", dictExif.get(272))    
     DateTimeOriginal = str(dictExif.get(36867))
@@ -19,7 +19,7 @@ def renameAccExif(jpgFile):
     if DateTimeOriginal != "None":
         filenameRaw = DateTimeOriginal
     else:
-        fileModTime = time.localtime(os.stat(jpgFile).st_mtime)
+        fileModTime = time.localtime(os.stat(imageName).st_mtime)
         filenameRaw = time.strftime("%Y%m%d_%H%M%S", fileModTime)
 
     #print(filenameRaw)    
@@ -32,13 +32,14 @@ def renameAccExif(jpgFile):
         filenameRaw = filenameRaw + "_" + CameraModel
     filenameRaw = filenameRaw.replace(' ','')
     
-    filenameRaw += ".jpg"
+    filename, file_extension = os.path.splitext(imageName)
+    filenameRaw += file_extension
+    
     return filenameRaw
-
 
 #####################################################################################
 # rename and compressed image (80%)
 #####################################################################################
 def renAndcompImg(src, dest):
     img = Image.open(src)
-    img.save(dest, quality = 80, optimize = True)
+    img.save(dest, quality = 85, optimize = True)
