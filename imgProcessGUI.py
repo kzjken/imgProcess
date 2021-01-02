@@ -1,3 +1,4 @@
+from os import path
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
@@ -11,7 +12,6 @@ import sys
 #################################################################################################################################
 #------------------------------------------------------------- Globale ---------------------------------------------------------#
 #################################################################################################################################
-#defaultDest = True
 
 
 #################################################################################################################################
@@ -77,10 +77,10 @@ ttk.Label(mainframe, text = "功能选项:").grid(row = 2, column = 0, sticky = 
 
 renameFlag = StringVar()
 renameFlag.set(1)
-rename_checkbutton = ttk.Checkbutton(mainframe, text = "重命名", variable = renameFlag, state = "disable")
+rename_checkbutton = ttk.Checkbutton(mainframe, text = "重命名", variable = renameFlag)
 rename_checkbutton.grid(row = 2, column = 2, sticky = (W, E), padx = 5)
 
-ttk.Label(mainframe, text = "1. 重命名照片为拍摄时间_拍摄设备 (基础功能，必选)").grid(row = 2, column = 1, sticky = W, padx = 5, pady = 5)
+ttk.Label(mainframe, text = "1. 重命名照片为拍摄时间_拍摄设备").grid(row = 2, column = 1, sticky = W, padx = 5, pady = 5)
 
 compressFlag = StringVar()
 compressFlag.set(1)
@@ -121,7 +121,10 @@ def cpRenImage(srcFolder, destfolder, extName):
     srcPathIncExtName = srcFolder + "\\*." + extName
     filecounter = 0
     for srcName in glob.glob(srcPathIncExtName):
-        destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
+        if renameFlag.get() == '1':
+            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
+        else:
+            destName = destfolder + "\\" + os.path.basename(srcName)
 
         if os.path.exists(destName):
             msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
