@@ -168,7 +168,7 @@ def preview(srcFolder, destfolder, extName):
         else:
             print("  " + os.path.basename(srcName))
         filecounter += 1
-    #return filecounter, srcList, destList
+
     if filecounter > 0:
         print("\n找到" + str(filecounter) + "个" + extName + "文件")
         print("---------------------------------------------------------------------------------------")
@@ -200,9 +200,8 @@ def preview(srcFolder, destfolder, extName):
 
         print("---------------------------------------------------------------------------------------")
         print("继续操作，请点击“执行操作”按钮")     
-
-            # if len(dupItemIndex) > 0:
-            #     msgBoxReturn = messagebox.askquestion(title = "提示", message = str(len(dupItemIndex)) + "个重复目标文件名\n是：增加数字后缀\n, 否：只处理第一个文件")
+    
+    return filecounter, srcList, destList
 
 def cpRenImage(srcFolder, destfolder, extName):
     srcPathIncExtName = srcFolder + "\\*." + extName
@@ -235,62 +234,13 @@ def cpRenImage(srcFolder, destfolder, extName):
             filecounter += 1
     return filecounter
 
-def previewAll(srcFolder, destfolder):
-    jpgConter, jpgSrcList, jpgDestList = preview(srcFolder, destfolder, "jpg")
-    if jpgConter > 0:
-        print("\n找到" + str(jpgConter) + "个文件")
-        # if renameFlag.get() == '1' and compressFlag.get() == '1':
-        #     print("\n重命名并压缩以上" + str(jpgConter) + "个文件")
-        # if renameFlag.get() == '1' and compressFlag.get() == '0':
-        #     print("\n重命名以上" + str(jpgConter) + "个文件")
-        # if renameFlag.get() == '0' and compressFlag.get() == '1':
-        #     print("\n压缩以上" + str(jpgConter) + "个文件")
-        print("---------------------------------------------------------------------------------------")
-        
-        if renameFlag.get() == '1':
-            dupItemIndex = []                     
-            dupItem = []
-            for index, element in enumerate(jpgDestList):
-                if jpgDestList.count(element) > 1:                    
-                    if element not in dupItem:                        
-                        print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(jpgDestList.count(element)) + "次，将增加数字后缀")                                                                                
-                        dupItem.append(element)    
-                    dupItemIndex.append(index)
-            print("结果如下：")              
-            for item in dupItem:
-                suffix = 0
-                for index in dupItemIndex:
-                    if jpgDestList[index] == item:
-                        filename, file_extension = os.path.splitext(jpgDestList[index])
-                        jpgDestList[index] = filename + '_' + str(suffix) + file_extension
-                        print("  " + os.path.basename(jpgSrcList[index]) + " ==> " + os.path.basename(jpgDestList[index])) 
-                        suffix += 1
-        else:
-            print("将对所有文件进行低损压缩。")
-        
-        process_Button.configure(state = "normal")
-        compress_checkbutton.configure(state = "disable")
-        rename_checkbutton.configure(state = "disable")
-
-        print("继续操作，请点击“执行操作”按钮")     
-        print("---------------------------------------------------------------------------------------")
-
-            # if len(dupItemIndex) > 0:
-            #     msgBoxReturn = messagebox.askquestion(title = "提示", message = str(len(dupItemIndex)) + "个重复目标文件名\n是：增加数字后缀\n, 否：只处理第一个文件")
-    
-
-    # jpegConter = preview(src, dest, "jpeg")
-    # pngConter = preview(src, dest, "png")
-
-    # print("=======================================================================")
-    # if jpgConter > 0:
-    #     print("processed " + str(jpgConter) + " jpg files") 
-    # if jpegConter > 0:
-    #     print("processed " + str(jpegConter) + " jpeg files")
-    # if pngConter > 0:
-    #     print("processed " + str(pngConter) + " png files")
-
-def preperation():  
+srcListJPG = []
+destListJPG = []
+srcListJPEG = []
+destListJPEG = []
+srcListPNG = []
+destListPNG = []
+def preperation():      
     log_text.configure(state = "normal")
     log_text.delete('1.0', END)    
  
@@ -310,9 +260,14 @@ def preperation():
             print("=======================================================================================")
             print("预览：")
             ############### mainfunction ################
-            preview(srcPath, destPath, "jpg")
-            #process_Button.configure(text = "执行操作", command = process)
-         
+            sumJPG, srcList, destList = preview(srcPath, destPath, "jpg")
+
+            for item in srcList:
+                srcListJPG.append(item)
+            for item in destList:
+                destListJPG.append(item)      
+            #sumJPEG, srcListJPEG, destListJPEG = preview(srcPath, destPath, "jpeg")
+            #process_Button.configure(text = "执行操作", command = process)         
         else:
             print("=======================================================================================")
             print("中止1！")
@@ -338,11 +293,26 @@ def process():
     #     print("\n重命名以上" + str(jpgConter) + "个文件")
     # if renameFlag.get() == '0' and compressFlag.get() == '1':
     #     print("\n压缩以上" + str(jpgConter) + "个文件")
-
-
     process_Button.configure(state = "disable")
     compress_checkbutton.configure(state = "normal")
-    rename_checkbutton.configure(state = "normal")   
+    rename_checkbutton.configure(state = "normal") 
+    # print(compressFlag.get())
+    # print(srcListJPG)
+    # print(destListJPG)
+
+    if compressFlag.get() == '1':
+        for index, imageJPG in enumerate(srcListJPG):                        
+            imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)                        
+            print(os.path.basename(imageJPG) + "==> " + os.path.basename(destListJPG[index]))        
+    else:
+        for index, imageJPG in enumerate(srcListJPG):
+            #imgProcess.renAndcompImg(imageJPG, destListJPG[index], 100)
+            os.system("copy " + imageJPG + " " + destListJPG[index])
+            print(os.path.basename(imageJPG) + "==> " + os.path.basename(destListJPG[index]))
+    srcListJPG.clear()
+    destListJPG.clear()
+    print("=======================================================================================")   
+    print("END")
 
     log_text.see(END)
     log_text.configure(state = "disable")
