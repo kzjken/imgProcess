@@ -34,7 +34,7 @@ class PrintLogger(): # create file like object
 root = Tk()
 root.title("Image Conventer [Z.Kang]")
 
-mainframe = ttk.Frame(root, padding = "4 3 12 12")
+mainframe = ttk.Frame(root, padding = "20 3 12 12")
 mainframe.grid(column = 0, row = 0, sticky = (N, W, E, S))
 root.columnconfigure(0, weight = 1)
 root.rowconfigure(0, weight = 1)
@@ -89,15 +89,15 @@ compress_checkbutton.grid(row = 3, column = 2, sticky = (W, E), padx = 5)
 ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 3, column = 1, sticky = W, padx = 5)
 
 #################################################################################################################################
-# row 5 log window
+# row 4 - 20 log window
 #################################################################################################################################
-ttk.Label(mainframe, text = "日志输出:").grid(row = 5, column = 0, sticky = (N, E), padx = 5, pady = 10)
+ttk.Label(mainframe, text = "日志输出:").grid(row = 4, column = 0, sticky = (N, E), padx = 5, pady = 10)
 
-log_text = Text(mainframe, width = 90, height = 15, state = "disabled")
-log_text.grid(row = 5, column = 1, sticky = (W, E), padx = 5, pady = 10)#, columnspan = 2) 
+log_text = Text(mainframe, width = 90, height = 30, state = "disabled")
+log_text.grid(row = 4, column = 1, sticky = (W, E), padx = 5, pady = 10, rowspan = 16)
 
 logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.yview)
-logText_scrollbar.grid(row = 5, column = 1, sticky = (E, N, S), padx = 5, pady = 10)
+logText_scrollbar.grid(row = 4, column = 1, sticky = (E, N, S), padx = 5, pady = 10, rowspan = 16)
 
 log_text.configure(yscrollcommand = logText_scrollbar.set)
 
@@ -107,15 +107,102 @@ sys.stdout = pl
 #################################################################################################################################
 # row 5 execute
 #################################################################################################################################
-def checkPath(workPath):
-    if(os.path.exists(workPath) == False):
-        msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + workPath + "\n不存在, 是否创建？")
-        if msgBoxReturn == "yes":
-            os.makedirs(workPath)
-            # if os.path.isdir(workPath):
-            #     os.makedirs(workPath)
-            # else:
-            #     messagebox.showerror(title = "错误", message = "指定目标路径\n" + workPath + "\n无效，请重新选择！")    
+def checkPath(srcFolder, destfolder):
+    print("检查路径：")
+    if srcFolder == "":
+        #messagebox.showerror(title = "错误", message = "指定源文件路径无效，请重新选择！")    
+        print("  错误：指定源文件路径无效，请选择！")
+        return False
+
+    # check if source folder is empty
+    if not os.listdir(srcFolder):
+        #messagebox.showerror(title = "错误", message = "目标文件夹\n" + srcFolder + "\内没有文件！")    
+        print("  错误：指定源文件夹内没有文件，请重新选择！")    
+        return False    
+    else:
+        if destfolder == "":
+            #messagebox.showerror(title = "错误", message = "指定目标文件路径无效，请重新选择！")        
+            print("  错误：指定目标文件路径无效，请选择！")
+            return False
+        else:        
+            if (os.path.exists(destfolder) == False):
+                if destfolder == srcFolder + "_OUTPUT":
+                    os.makedirs(destfolder)
+                    print("  目标文件夹" + destfolder + "已创建。")
+                    return True
+                else:
+                    msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + destfolder + "\n不存在, 是否创建？")
+                    if msgBoxReturn == "yes":
+                        os.makedirs(destfolder)   
+                        return True
+                    else:
+                        return False
+            else:
+                return True
+
+def checkCheckButton():
+    print("检查功能项：")
+    #print(renameFlag.get() + compressFlag.get() + "   " + type(renameFlag.get()))
+
+    if renameFlag.get() == '0' and compressFlag.get() == '0':
+        print("  错误：请至少选择一个功能选项！")
+        return False
+    else:
+        return True
+   
+def preview(srcFolder, destfolder, extName):
+    srcPathIncExtName = srcFolder + "\\*." + extName
+    filecounter = 0
+    srcList = []
+    destList = []
+    for srcName in glob.glob(srcPathIncExtName):
+        if renameFlag.get() == '1':
+            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
+        else:
+            destName = destfolder + "\\" + os.path.basename(srcName)
+
+        srcList.append(srcName)
+        destList.append(destName)
+        if renameFlag.get() == '1':            
+            print("  " + os.path.basename(srcName) + " ==> " + os.path.basename(destName)) 
+        else:
+            print("  " + os.path.basename(srcName))
+        filecounter += 1
+    #return filecounter, srcList, destList
+    if filecounter > 0:
+        print("\n找到" + str(filecounter) + "个" + extName + "文件")
+        print("---------------------------------------------------------------------------------------")
+        
+        if renameFlag.get() == '1':
+            dupItemIndex = []                     
+            dupItem = []
+            for index, element in enumerate(destList):
+                if destList.count(element) > 1:                    
+                    if element not in dupItem:                        
+                        print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(destList.count(element)) + "次，将增加数字后缀")                                                                                
+                        dupItem.append(element)    
+                    dupItemIndex.append(index)
+            print("结果如下：")              
+            for item in dupItem:
+                suffix = 0
+                for index in dupItemIndex:
+                    if destList[index] == item:
+                        filename, file_extension = os.path.splitext(destList[index])
+                        destList[index] = filename + '_' + str(suffix) + file_extension
+                        print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index])) 
+                        suffix += 1
+        else:
+            print("将对所有文件进行低损压缩。")
+        
+        process_Button.configure(state = "normal")
+        compress_checkbutton.configure(state = "disable")
+        rename_checkbutton.configure(state = "disable")
+
+        print("---------------------------------------------------------------------------------------")
+        print("继续操作，请点击“执行操作”按钮")     
+
+            # if len(dupItemIndex) > 0:
+            #     msgBoxReturn = messagebox.askquestion(title = "提示", message = str(len(dupItemIndex)) + "个重复目标文件名\n是：增加数字后缀\n, 否：只处理第一个文件")
 
 def cpRenImage(srcFolder, destfolder, extName):
     srcPathIncExtName = srcFolder + "\\*." + extName
@@ -148,49 +235,136 @@ def cpRenImage(srcFolder, destfolder, extName):
             filecounter += 1
     return filecounter
 
-def renameAll(src, dest):
-    jpgConter = cpRenImage(src, dest, "jpg")
-    jpepConter = cpRenImage(src, dest, "jpeg")
-    pngConter = cpRenImage(src, dest, "png")
-
-    print("=======================================================================")
+def previewAll(srcFolder, destfolder):
+    jpgConter, jpgSrcList, jpgDestList = preview(srcFolder, destfolder, "jpg")
     if jpgConter > 0:
-        print("processed " + str(jpgConter) + " jpg files") 
-    if jpepConter > 0:
-        print("processed " + str(jpepConter) + " jpeg files")
-    if pngConter > 0:
-        print("processed " + str(pngConter) + " png files")
+        print("\n找到" + str(jpgConter) + "个文件")
+        # if renameFlag.get() == '1' and compressFlag.get() == '1':
+        #     print("\n重命名并压缩以上" + str(jpgConter) + "个文件")
+        # if renameFlag.get() == '1' and compressFlag.get() == '0':
+        #     print("\n重命名以上" + str(jpgConter) + "个文件")
+        # if renameFlag.get() == '0' and compressFlag.get() == '1':
+        #     print("\n压缩以上" + str(jpgConter) + "个文件")
+        print("---------------------------------------------------------------------------------------")
+        
+        if renameFlag.get() == '1':
+            dupItemIndex = []                     
+            dupItem = []
+            for index, element in enumerate(jpgDestList):
+                if jpgDestList.count(element) > 1:                    
+                    if element not in dupItem:                        
+                        print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(jpgDestList.count(element)) + "次，将增加数字后缀")                                                                                
+                        dupItem.append(element)    
+                    dupItemIndex.append(index)
+            print("结果如下：")              
+            for item in dupItem:
+                suffix = 0
+                for index in dupItemIndex:
+                    if jpgDestList[index] == item:
+                        filename, file_extension = os.path.splitext(jpgDestList[index])
+                        jpgDestList[index] = filename + '_' + str(suffix) + file_extension
+                        print("  " + os.path.basename(jpgSrcList[index]) + " ==> " + os.path.basename(jpgDestList[index])) 
+                        suffix += 1
+        else:
+            print("将对所有文件进行低损压缩。")
+        
+        process_Button.configure(state = "normal")
+        compress_checkbutton.configure(state = "disable")
+        rename_checkbutton.configure(state = "disable")
 
-def process():  
-    # print(renameFlag.get())
-    # print(compressFlag.get())    
+        print("继续操作，请点击“执行操作”按钮")     
+        print("---------------------------------------------------------------------------------------")
+
+            # if len(dupItemIndex) > 0:
+            #     msgBoxReturn = messagebox.askquestion(title = "提示", message = str(len(dupItemIndex)) + "个重复目标文件名\n是：增加数字后缀\n, 否：只处理第一个文件")
+    
+
+    # jpegConter = preview(src, dest, "jpeg")
+    # pngConter = preview(src, dest, "png")
+
+    # print("=======================================================================")
+    # if jpgConter > 0:
+    #     print("processed " + str(jpgConter) + " jpg files") 
+    # if jpegConter > 0:
+    #     print("processed " + str(jpegConter) + " jpeg files")
+    # if pngConter > 0:
+    #     print("processed " + str(pngConter) + " png files")
+
+def preperation():  
     log_text.configure(state = "normal")
-
     log_text.delete('1.0', END)    
  
     ### path
     srcPath = srcPath_entry.get()
     destPath = destPath_entry.get()
+    # print("源文件夹 = " + srcPath)
+    # print("目标文件夹 = " + destPath)
+    # print("=======================================================================")
 
-    checkPath(srcPath)
-    if destPath != srcPath + "_Output":
-        checkPath(destPath)
+    if checkPath(srcPath, destPath):
+        print("路径正常")
+        print("---------------------------------------------------------------------------------------")
+
+        if checkCheckButton():
+            print("功能项已选")
+            print("=======================================================================================")
+            print("预览：")
+            ############### mainfunction ################
+            preview(srcPath, destPath, "jpg")
+            #process_Button.configure(text = "执行操作", command = process)
+         
+        else:
+            print("=======================================================================================")
+            print("中止1！")
+            pass  
     else:
-        if (os.path.exists(destPath) == False):
-            os.makedirs(destPath)
+        print("=======================================================================================")
+        print("中止2！")
+        pass
 
-    # check if source folder is empty
-    if os.listdir(srcPath) == False:
-        messagebox.showerror(title = "错误", message = "目标文件夹\n" + srcPath + "\内没有文件！")    
-
-    renameAll(srcPath, destPath)
-
-    # if compressFlag.get() == '1':
-    #     renAndcompImg(destPath) 
     log_text.see(END)
     log_text.configure(state = "disable")
 
-ttk.Button(mainframe, text = "执行操作", command = process).grid(row = 5, column = 2, sticky = N, padx = 5, pady = 10)
+def process():  
+    log_text.configure(state = "normal")
+    print("=======================================================================================")
+    print("=======================================================================================")
+  
+    print("开始处理")
+
+    # if renameFlag.get() == '1' and compressFlag.get() == '1':
+    #     print("\n重命名并压缩以上" + str(jpgConter) + "个文件")
+    # if renameFlag.get() == '1' and compressFlag.get() == '0':
+    #     print("\n重命名以上" + str(jpgConter) + "个文件")
+    # if renameFlag.get() == '0' and compressFlag.get() == '1':
+    #     print("\n压缩以上" + str(jpgConter) + "个文件")
+
+
+    process_Button.configure(state = "disable")
+    compress_checkbutton.configure(state = "normal")
+    rename_checkbutton.configure(state = "normal")   
+
+    log_text.see(END)
+    log_text.configure(state = "disable")
+
+preperation_Button = ttk.Button(mainframe, text = "预览", command = preperation)
+preperation_Button.grid(row = 4, column = 2, sticky = (N, S), padx = 5, pady = 10)
+
+process_Button = ttk.Button(mainframe, text = "执行操作", command = process, state = "disable")
+process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 5, rowspan = 3)
+
+#################################################################################################################################
+# row 7 -
+#################################################################################################################################
+# def breakProcess():
+#     sys.exit("Stop")
+
+# ttk.Button(mainframe, text = "中止操作", command = breakProcess).grid(row = 8, column = 2, sticky = N, padx = 5, pady = 0)
+# ttk.Button(mainframe, text = "是").grid(row = 9, column = 2, sticky = N, padx = 5, pady = 0)
+# ttk.Button(mainframe, text = "否").grid(row = 10, column = 2, sticky = N, padx = 5, pady = 0)
+#ttk.Button(mainframe, text = "yes").grid(row = 9, column = 2, sticky = N, padx = 5, pady = 0)
+
+
 
 #ttk.Label(mainframe, text = "Z.Kang").grid(row = 5, column = 2, sticky = (S, E), padx = 5, pady = 5)
 
