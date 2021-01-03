@@ -125,20 +125,21 @@ def checkPath(srcFolder, destfolder):
             print("  错误：指定目标文件路径无效，请选择！")
             return False
         else:        
-            if (os.path.exists(destfolder) == False):
-                if destfolder == srcFolder + "_OUTPUT":
-                    os.makedirs(destfolder)
-                    print("  目标文件夹" + destfolder + "已创建。")
-                    return True
-                else:
-                    msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + destfolder + "\n不存在, 是否创建？")
-                    if msgBoxReturn == "yes":
-                        os.makedirs(destfolder)   
-                        return True
-                    else:
-                        return False
-            else:
-                return True
+            return True
+            # if (os.path.exists(destfolder) == False):
+            #     if destfolder == srcFolder + "_OUTPUT":
+            #         os.makedirs(destfolder)
+            #         print("  目标文件夹" + destfolder + "已创建。")
+            #         return True
+            #     else:
+            #         msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + destfolder + "\n不存在, 是否创建？")
+            #         if msgBoxReturn == "yes":
+            #             os.makedirs(destfolder)   
+            #             return True
+            #         else:
+            #             return False
+            # else:
+            #     return True
 
 def checkCheckButton():
     print("检查功能项：")
@@ -195,8 +196,8 @@ def preview(srcFolder, destfolder, extName):
             print("将对所有文件进行低损压缩。")
         
         process_Button.configure(state = "normal")
-        compress_checkbutton.configure(state = "disable")
-        rename_checkbutton.configure(state = "disable")
+        #compress_checkbutton.configure(state = "disable")
+        #rename_checkbutton.configure(state = "disable")
 
         print("---------------------------------------------------------------------------------------")
         print("继续操作，请点击“执行操作”按钮")     
@@ -262,10 +263,13 @@ def preperation():
             ############### mainfunction ################
             sumJPG, srcList, destList = preview(srcPath, destPath, "jpg")
 
+            srcListJPG.clear()
+            destListJPG.clear()
             for item in srcList:
                 srcListJPG.append(item)
             for item in destList:
-                destListJPG.append(item)      
+                destListJPG.append(item)  
+
             #sumJPEG, srcListJPEG, destListJPEG = preview(srcPath, destPath, "jpeg")
             #process_Button.configure(text = "执行操作", command = process)         
         else:
@@ -287,15 +291,22 @@ def process():
   
     print("开始处理")
 
-    # if renameFlag.get() == '1' and compressFlag.get() == '1':
-    #     print("\n重命名并压缩以上" + str(jpgConter) + "个文件")
-    # if renameFlag.get() == '1' and compressFlag.get() == '0':
-    #     print("\n重命名以上" + str(jpgConter) + "个文件")
-    # if renameFlag.get() == '0' and compressFlag.get() == '1':
-    #     print("\n压缩以上" + str(jpgConter) + "个文件")
+    srcPath = srcPath_entry.get()
+    destPath = destPath_entry.get()    
+    if (os.path.exists(destPath) == False):
+        if destPath == srcPath + "_OUTPUT":
+            os.makedirs(destPath)
+        else:
+            msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + destPath + "\n不存在, 是否创建？")
+            if msgBoxReturn == "yes":
+                os.makedirs(destPath)   
+    print("  创建目标文件夹" + destPath)
+    print("---------------------------------------------------------------------------------------")
+
     process_Button.configure(state = "disable")
-    compress_checkbutton.configure(state = "normal")
-    rename_checkbutton.configure(state = "normal") 
+    #compress_checkbutton.configure(state = "normal")
+    #rename_checkbutton.configure(state = "normal") 
+
     # print(compressFlag.get())
     # print(srcListJPG)
     # print(destListJPG)
@@ -303,14 +314,13 @@ def process():
     if compressFlag.get() == '1':
         for index, imageJPG in enumerate(srcListJPG):                        
             imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)                        
-            print(os.path.basename(imageJPG) + "==> " + os.path.basename(destListJPG[index]))        
+            print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))        
     else:
         for index, imageJPG in enumerate(srcListJPG):
             #imgProcess.renAndcompImg(imageJPG, destListJPG[index], 100)
             os.system("copy " + imageJPG + " " + destListJPG[index])
-            print(os.path.basename(imageJPG) + "==> " + os.path.basename(destListJPG[index]))
-    srcListJPG.clear()
-    destListJPG.clear()
+            print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
+
     print("=======================================================================================")   
     print("END")
 
