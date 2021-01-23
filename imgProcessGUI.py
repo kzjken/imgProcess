@@ -71,7 +71,7 @@ def modDestDir():
 ttk.Button(mainframe, text = "修改文件夹", command = modDestDir).grid(row = 1, column = 2, sticky = W, padx = 5, pady = 5)
 
 #################################################################################################################################
-# row 2 - 4
+# row 2 - 5
 #################################################################################################################################
 ttk.Label(mainframe, text = "功能选项:").grid(row = 2, column = 0, sticky = E, padx = 5, pady = 5)
 
@@ -79,25 +79,30 @@ renameFlag = StringVar()
 renameFlag.set(1)
 rename_checkbutton = ttk.Checkbutton(mainframe, text = "重命名", variable = renameFlag)
 rename_checkbutton.grid(row = 2, column = 2, sticky = (W, E), padx = 5)
-
 ttk.Label(mainframe, text = "1. 重命名照片为拍摄时间_拍摄设备").grid(row = 2, column = 1, sticky = W, padx = 5, pady = 5)
 
 compressFlag = StringVar()
 compressFlag.set(1)
 compress_checkbutton = ttk.Checkbutton(mainframe, text = "压缩图像", variable = compressFlag)
 compress_checkbutton.grid(row = 3, column = 2, sticky = (W, E), padx = 5)
-ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 3, column = 1, sticky = W, padx = 5)
+ttk.Label(mainframe, text = "2. 使用Python PIL进行图像压缩").grid(row = 3, column = 1, sticky = W, padx = 5, pady = 5)
+
+plotFlag = StringVar()
+plotFlag.set(0)
+plot_checkbutton = ttk.Checkbutton(mainframe, text = "Plot", variable = plotFlag)
+plot_checkbutton.grid(row = 4, column = 2, sticky = (W, E), padx = 5)
+ttk.Label(mainframe, text = "3. 分析常用光圈，焦距").grid(row = 4, column = 1, sticky = W, padx = 5, pady = 5)
 
 #################################################################################################################################
-# row 4 - 20 log window
+# row 5 - 20 log window
 #################################################################################################################################
-ttk.Label(mainframe, text = "日志输出:").grid(row = 4, column = 0, sticky = (N, E), padx = 5, pady = 10)
+ttk.Label(mainframe, text = "日志输出:").grid(row = 6, column = 0, sticky = (N, E), padx = 5, pady = 10)
 
 log_text = Text(mainframe, width = 90, height = 30, state = "disabled")
-log_text.grid(row = 4, column = 1, sticky = (W, E), padx = 5, pady = 10, rowspan = 16)
+log_text.grid(row = 6, column = 1, sticky = (W, E), padx = 5, pady = 10, rowspan = 16)
 
 logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.yview)
-logText_scrollbar.grid(row = 4, column = 1, sticky = (E, N, S), padx = 5, pady = 10, rowspan = 16)
+logText_scrollbar.grid(row = 6, column = 1, sticky = (E, N, S), padx = 5, pady = 10, rowspan = 16)
 
 log_text.configure(yscrollcommand = logText_scrollbar.set)
 
@@ -204,36 +209,36 @@ def preview(srcFolder, destfolder, extName):
     
     return filecounter, srcList, destList
 
-def cpRenImage(srcFolder, destfolder, extName):
-    srcPathIncExtName = srcFolder + "\\*." + extName
-    filecounter = 0
-    for srcName in glob.glob(srcPathIncExtName):
-        if renameFlag.get() == '1':
-            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
-        else:
-            destName = destfolder + "\\" + os.path.basename(srcName)
+# def cpRenImage(srcFolder, destfolder, extName):
+#     srcPathIncExtName = srcFolder + "\\*." + extName
+#     filecounter = 0
+#     for srcName in glob.glob(srcPathIncExtName):
+#         if renameFlag.get() == '1':
+#             destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
+#         else:
+#             destName = destfolder + "\\" + os.path.basename(srcName)
 
-        if os.path.exists(destName):
-            msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
-            if msgBoxReturn == "yes":
-                if compressFlag.get() == '1':
-                    imgProcess.renAndcompImg(srcName, destName)
-                    print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
-                else:
-                    os.system("copy  " + srcName + " " + destName)      
-                    print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
-                filecounter += 1
-            else:
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : canceled")
-        else:
-            if compressFlag.get() == '1':
-                imgProcess.renAndcompImg(srcName, destName)
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
-            else:
-                os.system("copy  " + srcName + " " + destName)      
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")    
-            filecounter += 1
-    return filecounter
+#         if os.path.exists(destName):
+#             msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
+#             if msgBoxReturn == "yes":
+#                 if compressFlag.get() == '1':
+#                     imgProcess.renAndcompImg(srcName, destName)
+#                     print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
+#                 else:
+#                     os.system("copy  " + srcName + " " + destName)      
+#                     print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
+#                 filecounter += 1
+#             else:
+#                 print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : canceled")
+#         else:
+#             if compressFlag.get() == '1':
+#                 imgProcess.renAndcompImg(srcName, destName)
+#                 print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
+#             else:
+#                 os.system("copy  " + srcName + " " + destName)      
+#                 print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")    
+#             filecounter += 1
+#     return filecounter
 
 srcListJPG = []
 destListJPG = []
@@ -328,10 +333,10 @@ def process():
     log_text.configure(state = "disable")
 
 preperation_Button = ttk.Button(mainframe, text = "预览", command = preperation)
-preperation_Button.grid(row = 4, column = 2, sticky = (N, S), padx = 5, pady = 10)
+preperation_Button.grid(row = 6, column = 2, sticky = (N, S), padx = 5, pady = 10)
 
 process_Button = ttk.Button(mainframe, text = "执行操作", command = process, state = "disable")
-process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 5, rowspan = 3)
+process_Button.grid(row = 7, column = 2, sticky = (N, S), padx = 5, pady = 5, rowspan = 3)
 
 #################################################################################################################################
 # row 7 -
@@ -346,7 +351,7 @@ process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 5, ro
 
 
 
-#ttk.Label(mainframe, text = "Z.Kang").grid(row = 5, column = 2, sticky = (S, E), padx = 5, pady = 5)
+#ttk.Label(mainframe, text = "Z.Kang").grid(row = 6, column = 2, sticky = (S, E), padx = 5, pady = 5)
 
 # # for child in mainframe.winfo_children(): 
 # #     child.grid_configure(padx = 5, pady = 5)
