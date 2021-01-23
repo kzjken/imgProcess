@@ -158,7 +158,8 @@ def preview(srcFolder, destfolder, extName):
     destList = []
     for srcName in glob.glob(srcPathIncExtName):
         if renameFlag.get() == '1':
-            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName)
+            exifList = imgProcess.getExif(srcName)
+            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName, exifList)            
         else:
             destName = destfolder + "\\" + os.path.basename(srcName)
 
@@ -183,15 +184,17 @@ def preview(srcFolder, destfolder, extName):
                         print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(destList.count(element)) + "次，将增加数字后缀")                                                                                
                         dupItem.append(element)    
                     dupItemIndex.append(index)
-            print("结果如下：")              
-            for item in dupItem:
-                suffix = 0
-                for index in dupItemIndex:
-                    if destList[index] == item:
-                        filename, file_extension = os.path.splitext(destList[index])
-                        destList[index] = filename + '_' + str(suffix) + file_extension
-                        print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index])) 
-                        suffix += 1
+
+            if len(dupItem) > 0:
+                print("结果如下：")              
+                for item in dupItem:
+                    suffix = 0
+                    for index in dupItemIndex:
+                        if destList[index] == item:
+                            filename, file_extension = os.path.splitext(destList[index])
+                            destList[index] = filename + '_' + str(suffix) + file_extension
+                            print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index])) 
+                            suffix += 1
         else:
             print("将对所有文件进行低损压缩。")
         

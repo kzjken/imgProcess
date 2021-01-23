@@ -3,18 +3,36 @@ import time
 from PIL import Image
 
 #####################################################################################
-# rename file according shot time and device
+# getExif via PIL
 #####################################################################################
-def renameAccExif(imageName):
-    # a. read exif
+def getExif(imageName):
+    listExif = []
     image = Image.open(imageName)
-    dictExif = image.getexif()    
-    #print("DateTimeOriginal:", dictExif.get(36867), ", Model:", dictExif.get(272))    
+    dictExif = image.getexif()  
+    #print(dictExif)  
     DateTimeOriginal = str(dictExif.get(36867))
     CameraModel = str(dictExif.get(272))
-    image.close()
+    Aperture = str(dictExif.get(33437))
+    FocalLength = str(dictExif.get(41989))
+    ShutterSpd = str(dictExif.get(33434))
 
-    # b. new filename part 1: time    
+    listExif.append(DateTimeOriginal)
+    listExif.append(CameraModel)
+    listExif.append(Aperture)
+    listExif.append(FocalLength)
+    listExif.append(ShutterSpd)
+    image.close()
+    
+    return listExif
+
+#####################################################################################
+# rename file according shot time and device
+#####################################################################################
+def renameAccExif(imageName, listEXIF):
+    DateTimeOriginal = listEXIF[0]
+    CameraModel = listEXIF[1]
+
+    # new filename part 1: time    
     filenameRaw = ""
     if DateTimeOriginal != "None":
         filenameRaw = DateTimeOriginal
@@ -27,7 +45,7 @@ def renameAccExif(imageName):
     filenameRaw = filenameRaw.replace(':','')
     filenameRaw = filenameRaw.replace(' ','_')
 
-    # c. new filename part 2: device part
+    # new filename part 2: device part
     if CameraModel != "None":
         filenameRaw = filenameRaw + "_" + CameraModel
     filenameRaw = filenameRaw.replace(' ','')
