@@ -49,7 +49,7 @@ srcPath = StringVar()
 srcPath_entry = ttk.Entry(mainframe, width = 50, textvariable = srcPath)
 srcPath_entry.grid(row = 0, column = 1, sticky = (W, E), padx = 5, pady = 5)
 
-def selectSrcDir():  
+def selectSrcDir():
     filepath = os.path.normpath(filedialog.askdirectory())
     srcPath.set(filepath)
 ttk.Button(mainframe, text = "Select Folder", command = selectSrcDir).grid(row = 0, column = 2, sticky = W, padx = 5, pady = 5)
@@ -67,8 +67,8 @@ logText_scrollbar.grid(row = 1, column = 1, sticky = (E, N, S), padx = 5, pady =
 
 log_text.configure(yscrollcommand = logText_scrollbar.set)
 
-pl = PrintLogger(log_text) 
-sys.stdout = pl             
+pl = PrintLogger(log_text)
+sys.stdout = pl
 
 #################################################################################################################################
 # row 1 execute
@@ -79,7 +79,7 @@ def checkPath(srcFolder):
         print("  Error：Invailed Path: " + srcFolder + ", please reselect!")
         print("=======================================================================================")
         return False
-    else:   
+    else:
         return True
 
 def createPlot(srcFolder):
@@ -90,13 +90,13 @@ def createPlot(srcFolder):
         exifList = imgProcess.getExif(srcName)
         exifList.insert(0, os.path.basename(srcName))
         listAllEXIF.append(exifList)
-    
+
     FocalLengthOrg = []
     FocalLength = []
     for item in listAllEXIF:
         FocalLengthOrg.append(item[4])
     CountNone = FocalLengthOrg.count("None")
-    
+
     for item in FocalLengthOrg:
         if item != "None":
             FocalLength.append(float(item))
@@ -121,7 +121,7 @@ def createPlot(srcFolder):
     lines1 = []
     lines2 = []
 
-    # Plot1    
+    # Plot1
     List2DTemp = []
     for item in FocalLength:
         listTemp = []
@@ -151,12 +151,12 @@ def createPlot(srcFolder):
 
     # for i in range(0, lineNo + 1):
     #     x.clear()
-    #     y.clear()    
-    #     lineLabel = legendlabel[i]        
+    #     y.clear()
+    #     lineLabel = legendlabel[i]
     #     for j in range(0, 200):
-    #         x.append(float(xAxis[i * 200 + j]))            
-    #         y.append(float(yAxis[i * 200 + j]))          
-    #     if i == 0:       
+    #         x.append(float(xAxis[i * 200 + j]))
+    #         y.append(float(yAxis[i * 200 + j]))
+    #     if i == 0:
     #         line, = ax.plot(x, y, lw = 1, linestyle = '--', label = lineLabel)
     #     else:
     #         line, = ax.plot(x, y, lw = 1, label = lineLabel)
@@ -166,12 +166,12 @@ def createPlot(srcFolder):
     # # Plot2
     # for i in range(0, lineNo + 1):
     #     x.clear()
-    #     y.clear()    
-    #     lineLabel = legendlabel[i]        
+    #     y.clear()
+    #     lineLabel = legendlabel[i]
     #     for j in range(0, 200):
-    #         x.append(float(xAxis[i * 200 + j]))            
-    #         y.append(float(yAxisS[i * 200 + j]))  
-    #     if i == 0:       
+    #         x.append(float(xAxis[i * 200 + j]))
+    #         y.append(float(yAxisS[i * 200 + j]))
+    #     if i == 0:
     #         line, = ax1.plot(x, y, lw = 1, linestyle = '--', label = lineLabel)
     #     else:
     #         line, = ax1.plot(x, y, lw = 1, label = lineLabel)
@@ -181,12 +181,12 @@ def createPlot(srcFolder):
     # # Plot3
     # for i in range(0, lineNo + 1):
     #     x.clear()
-    #     y.clear()    
-    #     lineLabel = legendlabel[i]        
+    #     y.clear()
+    #     lineLabel = legendlabel[i]
     #     for j in range(0, 200):
-    #         x.append(float(xAxis2[i * 200 + j]))            
-    #         y.append(float(yAxis2[i * 200 + j]))   
-    #     if i == 0:       
+    #         x.append(float(xAxis2[i * 200 + j]))
+    #         y.append(float(yAxis2[i * 200 + j]))
+    #     if i == 0:
     #         line, = ax2.plot(x, y, lw = 1, linestyle = '--', label = lineLabel)
     #     else:
     #         line, = ax2.plot(x, y, lw = 1, label = lineLabel)
@@ -196,7 +196,7 @@ def createPlot(srcFolder):
     # # on_pick via legend
     # #leg = ax2.legend(fancybox=True, shadow=True, loc='upper right')
     # leg = ax1.legend(fancybox=True, shadow=True, bbox_to_anchor=(1,1), loc="upper left")
-    
+
     # lined = {}  # Will map legend lines to original lines.
     # lined1 = {}  # Will map legend lines to original lines.
     # lined2 = {}  # Will map legend lines to original lines.
@@ -232,7 +232,7 @@ def createPlot(srcFolder):
 
 def createPlotTest(srcFolder):
 
-    srcPathIncExtName = srcFolder + "\\**\\*." + "jpg"    
+    srcPathIncExtName = srcFolder + "\\**\\*." + "jpg"
     listImage = glob.glob(srcPathIncExtName, recursive = True)
     imageCount = len(listImage)
     if imageCount == 0:
@@ -248,7 +248,7 @@ def createPlotTest(srcFolder):
             print(os.path.basename(srcName) + ": " + str(exifList))
             exifList.insert(0, os.path.basename(srcName))
             listAllEXIF.append(exifList)
-        
+
         focalLengthList = []
         focalLengthListCount = []
         for item in listAllEXIF:
@@ -272,24 +272,24 @@ def createPlotTest(srcFolder):
         List2DTemp = sorted(List2DTemp, key = lambda x: (x[0]))
         # listTemp = []
         # listTemp.append("None")
-        # listTemp.append(noneFlCount)                
+        # listTemp.append(noneFlCount)
         # List2DTemp.append(listTemp)
-        # print(List2DTemp)    
+        # print(List2DTemp)
         # print("=======================================================================================")
         # count = 0
-        # for item in List2DTemp:           
+        # for item in List2DTemp:
         #     item = list(item)
         #     focalLengthList.append(str(item[0]))
         #     focalLengthListCount.append(item[1])
-        #     print(item) 
+        #     print(item)
         #     count += 1
         # print(count)
 
         # print("END=======================================================================================")
-        # print(List2DTemp) 
+        # print(List2DTemp)
         focalLengthList.clear()
         focalLengthListCount.clear()
-        for item in List2DTemp:  
+        for item in List2DTemp:
             focalLengthList.append(str(item[0]))
             focalLengthListCount.append(item[1])
         # focalLengthList.append("None")
@@ -323,7 +323,7 @@ def createPlotTest(srcFolder):
 
 def analyse():
     log_text.configure(state = "normal")
-    log_text.delete('1.0', END)   
+    log_text.delete('1.0', END)
     print("=======================================================================================")
 
     srcPath = srcPath_entry.get()

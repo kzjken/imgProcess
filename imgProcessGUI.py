@@ -48,7 +48,7 @@ srcPath = StringVar()
 srcPath_entry = ttk.Entry(mainframe, width = 50, textvariable = srcPath)
 srcPath_entry.grid(row = 0, column = 1, sticky = (W, E), padx = 5, pady = 5)
 
-def selectSrcDir():  
+def selectSrcDir():
     filepath = os.path.normpath(filedialog.askdirectory())
     srcPath.set(filepath)
     #destPath.set(filepath + "/" + os.path.basename(filepath) + "_Output")
@@ -65,9 +65,9 @@ destPath = StringVar()
 destPath_entry = ttk.Entry(mainframe, width = 50, textvariable = destPath)
 destPath_entry.grid(row = 1, column = 1, sticky = (W, E), padx = 5, pady = 5)
 
-def modDestDir():  
+def modDestDir():
     filepath = os.path.normpath(filedialog.askdirectory())
-    destPath.set(filepath)    
+    destPath.set(filepath)
 ttk.Button(mainframe, text = "修改文件夹", command = modDestDir).grid(row = 1, column = 2, sticky = W, padx = 5, pady = 5)
 
 #################################################################################################################################
@@ -101,8 +101,8 @@ logText_scrollbar.grid(row = 4, column = 1, sticky = (E, N, S), padx = 5, pady =
 
 log_text.configure(yscrollcommand = logText_scrollbar.set)
 
-pl = PrintLogger(log_text) 
-sys.stdout = pl             
+pl = PrintLogger(log_text)
+sys.stdout = pl
 
 #################################################################################################################################
 # row 5 execute
@@ -110,21 +110,21 @@ sys.stdout = pl
 def checkPath(srcFolder, destfolder):
     print("检查路径：")
     if srcFolder == "":
-        #messagebox.showerror(title = "错误", message = "指定源文件路径无效，请重新选择！")    
+        #messagebox.showerror(title = "错误", message = "指定源文件路径无效，请重新选择！")
         print("  错误：指定源文件路径无效，请选择！")
         return False
 
     # check if source folder is empty
     if not os.listdir(srcFolder):
-        #messagebox.showerror(title = "错误", message = "目标文件夹\n" + srcFolder + "\内没有文件！")    
-        print("  错误：指定源文件夹内没有文件，请重新选择！")    
-        return False    
+        #messagebox.showerror(title = "错误", message = "目标文件夹\n" + srcFolder + "\内没有文件！")
+        print("  错误：指定源文件夹内没有文件，请重新选择！")
+        return False
     else:
         if destfolder == "":
-            #messagebox.showerror(title = "错误", message = "指定目标文件路径无效，请重新选择！")        
+            #messagebox.showerror(title = "错误", message = "指定目标文件路径无效，请重新选择！")
             print("  错误：指定目标文件路径无效，请选择！")
             return False
-        else:        
+        else:
             return True
             # if (os.path.exists(destfolder) == False):
             #     if destfolder == srcFolder + "_OUTPUT":
@@ -134,7 +134,7 @@ def checkPath(srcFolder, destfolder):
             #     else:
             #         msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + destfolder + "\n不存在, 是否创建？")
             #         if msgBoxReturn == "yes":
-            #             os.makedirs(destfolder)   
+            #             os.makedirs(destfolder)
             #             return True
             #         else:
             #             return False
@@ -150,7 +150,7 @@ def checkCheckButton():
         return False
     else:
         return True
-   
+
 def preview(srcFolder, destfolder, extName):
     srcPathIncExtName = srcFolder + "\\*." + extName
     filecounter = 0
@@ -159,14 +159,14 @@ def preview(srcFolder, destfolder, extName):
     for srcName in glob.glob(srcPathIncExtName):
         if renameFlag.get() == '1':
             exifList = imgProcess.getExif(srcName)
-            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName, exifList)            
+            destName = destfolder + "\\" + imgProcess.renameAccExif(srcName, exifList)
         else:
             destName = destfolder + "\\" + os.path.basename(srcName)
 
         srcList.append(srcName)
         destList.append(destName)
-        if renameFlag.get() == '1':            
-            print("  " + os.path.basename(srcName) + " ==> " + os.path.basename(destName)) 
+        if renameFlag.get() == '1':
+            print("  " + os.path.basename(srcName) + " ==> " + os.path.basename(destName))
         else:
             print("  " + os.path.basename(srcName))
         filecounter += 1
@@ -174,37 +174,37 @@ def preview(srcFolder, destfolder, extName):
     if filecounter > 0:
         print("\n找到" + str(filecounter) + "个" + extName + "文件")
         print("---------------------------------------------------------------------------------------")
-        
+
         if renameFlag.get() == '1':
-            dupItemIndex = []                     
+            dupItemIndex = []
             dupItem = []
             for index, element in enumerate(destList):
-                if destList.count(element) > 1:                    
-                    if element not in dupItem:                        
-                        print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(destList.count(element)) + "次，将增加数字后缀")                                                                                
-                        dupItem.append(element)    
+                if destList.count(element) > 1:
+                    if element not in dupItem:
+                        print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(destList.count(element)) + "次，将增加数字后缀")
+                        dupItem.append(element)
                     dupItemIndex.append(index)
 
             if len(dupItem) > 0:
-                print("结果如下：")              
+                print("结果如下：")
                 for item in dupItem:
                     suffix = 0
                     for index in dupItemIndex:
                         if destList[index] == item:
                             filename, file_extension = os.path.splitext(destList[index])
                             destList[index] = filename + '_' + str(suffix) + file_extension
-                            print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index])) 
+                            print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index]))
                             suffix += 1
         else:
             print("将对所有文件进行低损压缩。")
-        
+
         process_Button.configure(state = "normal")
         #compress_checkbutton.configure(state = "disable")
         #rename_checkbutton.configure(state = "disable")
 
         print("---------------------------------------------------------------------------------------")
-        print("继续操作，请点击“执行操作”按钮")     
-    
+        print("继续操作，请点击“执行操作”按钮")
+
     return filecounter, srcList, destList
 
 def cpRenImage(srcFolder, destfolder, extName):
@@ -217,13 +217,13 @@ def cpRenImage(srcFolder, destfolder, extName):
             destName = destfolder + "\\" + os.path.basename(srcName)
 
         if os.path.exists(destName):
-            msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")    
+            msgBoxReturn = messagebox.askquestion(title = "警告", message = os.path.basename(destName) + "已存在，是否覆盖？")
             if msgBoxReturn == "yes":
                 if compressFlag.get() == '1':
                     imgProcess.renAndcompImg(srcName, destName)
                     print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
                 else:
-                    os.system("copy  " + srcName + " " + destName)      
+                    os.system("copy  " + srcName + " " + destName)
                     print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
                 filecounter += 1
             else:
@@ -233,8 +233,8 @@ def cpRenImage(srcFolder, destfolder, extName):
                 imgProcess.renAndcompImg(srcName, destName)
                 print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
             else:
-                os.system("copy  " + srcName + " " + destName)      
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")    
+                os.system("copy  " + srcName + " " + destName)
+                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
             filecounter += 1
     return filecounter
 
@@ -244,10 +244,10 @@ srcListJPEG = []
 destListJPEG = []
 srcListPNG = []
 destListPNG = []
-def preperation():      
+def preperation():
     log_text.configure(state = "normal")
-    log_text.delete('1.0', END)    
- 
+    log_text.delete('1.0', END)
+
     ### path
     srcPath = srcPath_entry.get()
     destPath = destPath_entry.get()
@@ -271,14 +271,14 @@ def preperation():
             for item in srcList:
                 srcListJPG.append(item)
             for item in destList:
-                destListJPG.append(item)  
+                destListJPG.append(item)
 
             #sumJPEG, srcListJPEG, destListJPEG = preview(srcPath, destPath, "jpeg")
-            #process_Button.configure(text = "执行操作", command = process)         
+            #process_Button.configure(text = "执行操作", command = process)
         else:
             print("=======================================================================================")
             print("中止1！")
-            pass  
+            pass
     else:
         print("=======================================================================================")
         print("中止2！")
@@ -287,44 +287,44 @@ def preperation():
     log_text.see(END)
     log_text.configure(state = "disable")
 
-def process():  
+def process():
     log_text.configure(state = "normal")
     print("=======================================================================================")
     print("=======================================================================================")
-  
+
     print("开始处理")
 
     srcPath = srcPath_entry.get()
-    destPath = destPath_entry.get()    
+    destPath = destPath_entry.get()
     if (os.path.exists(destPath) == False):
         if destPath == srcPath + "_OUTPUT":
             os.makedirs(destPath)
         else:
             msgBoxReturn = messagebox.askquestion(title = "提示", message = "目标文件夹\n" + destPath + "\n不存在, 是否创建？")
             if msgBoxReturn == "yes":
-                os.makedirs(destPath)   
+                os.makedirs(destPath)
     print("  创建目标文件夹" + destPath)
     print("---------------------------------------------------------------------------------------")
 
     process_Button.configure(state = "disable")
     #compress_checkbutton.configure(state = "normal")
-    #rename_checkbutton.configure(state = "normal") 
+    #rename_checkbutton.configure(state = "normal")
 
     # print(compressFlag.get())
     # print(srcListJPG)
     # print(destListJPG)
 
     if compressFlag.get() == '1':
-        for index, imageJPG in enumerate(srcListJPG):                        
-            imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)                        
-            print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))        
+        for index, imageJPG in enumerate(srcListJPG):
+            imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)
+            print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
     else:
         for index, imageJPG in enumerate(srcListJPG):
             #imgProcess.renAndcompImg(imageJPG, destListJPG[index], 100)
             os.system("copy " + imageJPG + " " + destListJPG[index])
             print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
 
-    print("=======================================================================================")   
+    print("=======================================================================================")
     print("END")
 
     log_text.see(END)
@@ -351,7 +351,7 @@ process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 5, ro
 
 #ttk.Label(mainframe, text = "Z.Kang").grid(row = 5, column = 2, sticky = (S, E), padx = 5, pady = 5)
 
-# # for child in mainframe.winfo_children(): 
+# # for child in mainframe.winfo_children():
 # #     child.grid_configure(padx = 5, pady = 5)
 
 # feet_entry.focus()

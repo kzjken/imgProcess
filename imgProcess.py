@@ -8,8 +8,8 @@ from PIL import Image
 def getExif(imageName):
     listExif = []
     image = Image.open(imageName)
-    dictExif = image.getexif()  
-    #print(dictExif)  
+    dictExif = image.getexif()
+    #print(dictExif)
     DateTimeOriginal = str(dictExif.get(36867))
     CameraModel = str(dictExif.get(272))
     Aperture = str(dictExif.get(33437))
@@ -22,7 +22,7 @@ def getExif(imageName):
     listExif.append(FocalLength)
     listExif.append(ShutterSpd)
     image.close()
-    
+
     return listExif
 
 #####################################################################################
@@ -32,7 +32,7 @@ def renameAccExif(imageName, listEXIF):
     DateTimeOriginal = listEXIF[0]
     CameraModel = listEXIF[1]
 
-    # new filename part 1: time    
+    # new filename part 1: time
     filenameRaw = ""
     if DateTimeOriginal != "None":
         filenameRaw = DateTimeOriginal
@@ -40,7 +40,7 @@ def renameAccExif(imageName, listEXIF):
         fileModTime = time.localtime(os.stat(imageName).st_mtime)
         filenameRaw = time.strftime("%Y%m%d_%H%M%S", fileModTime)
 
-    #print(filenameRaw)    
+    #print(filenameRaw)
 
     filenameRaw = filenameRaw.replace(':','')
     filenameRaw = filenameRaw.replace(' ','_')
@@ -49,10 +49,10 @@ def renameAccExif(imageName, listEXIF):
     if CameraModel != "None":
         filenameRaw = filenameRaw + "_" + CameraModel
     filenameRaw = filenameRaw.replace(' ','')
-    
+
     filename, file_extension = os.path.splitext(imageName)
     filenameRaw += file_extension
-    
+
     return filenameRaw
 
 #####################################################################################
