@@ -32,7 +32,7 @@ class PrintLogger(): # create file like object
 #------------------------------------------------------------- tkinter ---------------------------------------------------------#
 #################################################################################################################################
 root = Tk()
-root.title("Image Conventer [Z.Kang]")
+root.title("Image Converter [Z.Kang]")
 
 mainframe = ttk.Frame(root, padding = "20 3 12 12")
 mainframe.grid(column = 0, row = 0, sticky = (N, W, E, S))
@@ -101,6 +101,7 @@ logText_scrollbar.grid(row = 4, column = 1, sticky = (E, N, S), padx = 5, pady =
 
 log_text.configure(yscrollcommand = logText_scrollbar.set)
 
+# change print output from terminal to tinker loh windows
 pl = PrintLogger(log_text)
 sys.stdout = pl
 
@@ -166,9 +167,9 @@ def preview(srcFolder, destfolder, extName):
         srcList.append(srcName)
         destList.append(destName)
         if renameFlag.get() == '1':
-            print("  " + os.path.basename(srcName) + " ==> " + os.path.basename(destName))
+            print("  " + str(filecounter + 1) + ': ' + os.path.basename(srcName) + " ==> " + os.path.basename(destName))
         else:
-            print("  " + os.path.basename(srcName))
+            print("  " + str(filecounter + 1) + ': ' + os.path.basename(srcName))
         filecounter += 1
 
     if filecounter > 0:
@@ -221,20 +222,20 @@ def cpRenImage(srcFolder, destfolder, extName):
             if msgBoxReturn == "yes":
                 if compressFlag.get() == '1':
                     imgProcess.renAndcompImg(srcName, destName)
-                    print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
+                    print(str(filecounter + 1) + ': ' + os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
                 else:
                     os.system("copy  " + srcName + " " + destName)
-                    print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
+                    print(str(filecounter + 1) + ': ' + os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
                 filecounter += 1
             else:
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : canceled")
+                print(str(filecounter + 1) + ': ' + os.path.basename(srcName) + " => " + os.path.basename(destName) + " : canceled")
         else:
             if compressFlag.get() == '1':
                 imgProcess.renAndcompImg(srcName, destName)
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
+                print(str(filecounter + 1) + ': ' + os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed and compressed")
             else:
                 os.system("copy  " + srcName + " " + destName)
-                print(os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
+                print(str(filecounter + 1) + ': ' + os.path.basename(srcName) + " => " + os.path.basename(destName) + " : renamed")
             filecounter += 1
     return filecounter
 
@@ -317,12 +318,12 @@ def process():
     if compressFlag.get() == '1':
         for index, imageJPG in enumerate(srcListJPG):
             imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)
-            print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
+            print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
     else:
         for index, imageJPG in enumerate(srcListJPG):
             #imgProcess.renAndcompImg(imageJPG, destListJPG[index], 100)
             os.system("copy " + imageJPG + " " + destListJPG[index])
-            print(os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
+            print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
 
     print("=======================================================================================")
     print("END")
