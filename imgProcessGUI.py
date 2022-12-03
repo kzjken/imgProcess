@@ -299,7 +299,7 @@ def process():
     srcPath = srcPath_entry.get()
     destPath = destPath_entry.get()
     if (os.path.exists(destPath) == False):
-        if destPath == srcPath + "_OUTPUT":
+        if destPath == srcPath + "_OUT":
             os.makedirs(destPath)
         else:
             msgBoxReturn = messagebox.askquestion(title = "Message", message = "Destination \n" + destPath + "\ndoesn't exist, create？")
