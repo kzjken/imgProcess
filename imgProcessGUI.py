@@ -15,6 +15,8 @@ import threading
 #------------------------------------------------------------- Global ----------------------------------------------------------#
 #################################################################################################################################
 
+srcListJPG = []
+destListJPG = []
 
 #################################################################################################################################
 #------------------------------------------------------------- rp stdout--------------------------------------------------------#
@@ -36,7 +38,7 @@ class PrintLogger():
 #------------------------------------------------------------- tkinter ---------------------------------------------------------#
 #################################################################################################################################
 root = Tk()
-root.title("Image Converter [Z.Kang]")
+root.title("Image Converter V0.2 [Z.Kang]")
 root.geometry("860x540")
 root.minsize(860, 540)
 root.maxsize(860, 540)
@@ -194,8 +196,10 @@ def preview(srcFolder, destFolder, extName):
         # print rename behavior
         if renameFlag.get() == '1':
             print("  " + str(fileCounter + 1) + ': ' + os.path.basename(srcName) + " ==> " + os.path.basename(destName))
+            log_text.see(END)
         else:
             print("  " + str(fileCounter + 1) + ': ' + os.path.basename(srcName))
+            log_text.see(END)
         fileCounter += 1
 
     if fileCounter > 0:
@@ -210,6 +214,7 @@ def preview(srcFolder, destFolder, extName):
                 if destList.count(element) > 1:
                     if element not in dupItem:
                         print("Conflicts:" + str(destList.count(element)) + " " + os.path.basename(element) + ": suffix _X will be added.")
+                        log_text.see(END)
                         dupItem.append(element)
                     dupItemIndex.append(index)
 
@@ -221,6 +226,7 @@ def preview(srcFolder, destFolder, extName):
                             filename, file_extension = os.path.splitext(destList[index])
                             destList[index] = filename + '_' + str(suffix) + file_extension
                             print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index]))
+                            log_text.see(END)
                             suffix += 1
         else:
             print("Reducing image size...")
@@ -236,15 +242,7 @@ def preview(srcFolder, destFolder, extName):
 
 ###########################################################
 
-srcListJPG = []
-destListJPG = []
-# srcListJPEG = []
-# destListJPEG = []
-# srcListPNG = []
-# destListPNG = []
-
-###########################################################
-
+""" commit preview button """
 def previewBtn():
     log_text.configure(state = "normal")
     log_text.delete('1.0', END)
@@ -288,7 +286,8 @@ def previewBtn():
 
 ###########################################################
 
-def process():
+""" commit execute button """
+def executeBtn():
     log_text.configure(state = "normal")
     print("=======================================================================================")
     print("=======================================================================================")
@@ -328,23 +327,21 @@ def process():
     log_text.see(END)
     log_text.configure(state = "disable")
 
+###########################################################
 
+""" thread execute """
 def thread_it(func, *args):
     t = threading.Thread(target=func, args=args)
     t.setDaemon(True)
     t.start()
 
 ###########################################################
-###########################################################
 
-preview_Button = ttk.Button(mainframe, text = "Preview", command = previewBtn)
-preview_Button.grid(row = 4, column = 2, sticky = (N, S), padx = 5, pady = 10)
-
-# process_Button = ttk.Button(mainframe, text = "Execute", command = process, state = "disable")
-process_Button = ttk.Button(mainframe, text='Execute', command=lambda:thread_it(process), state = "disable")
-
-process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 5, rowspan = 3)
+""" Button Preview """
+preview_Button = ttk.Button(mainframe, text = "Preview", command=lambda:thread_it(previewBtn))
+preview_Button.grid(row = 4, column = 2, sticky = (N, S), padx = 5, pady = 8)
+""" Button Execute """
+process_Button = ttk.Button(mainframe, text='Execute', command=lambda:thread_it(executeBtn), state = "disable")
+process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 8, rowspan = 3)
 
 root.mainloop()
-
-#pyinstaller --noconsole imgProcessGUI.py
