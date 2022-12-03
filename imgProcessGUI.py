@@ -9,6 +9,7 @@ import imgProcess
 import sys
 from datetime import datetime
 from datetime import date
+import threading
 
 #################################################################################################################################
 #------------------------------------------------------------- Global ----------------------------------------------------------#
@@ -137,7 +138,7 @@ def checkPath(srcFolder, destFolder):
         print("  Error: No images in source folder, please reselect...")
         return False
     else:
-        if destFolder == "" or not os.path.isdir(destFolder):
+        if destFolder == "":
             print("  Error: Destination path invalid, please reselect...")
             return False
         else:
@@ -313,11 +314,13 @@ def process():
         for index, imageJPG in enumerate(srcListJPG):
             imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
+            log_text.see(END)
     else:
         for index, imageJPG in enumerate(srcListJPG):
             #imgProcess.renAndcompImg(imageJPG, destListJPG[index], 100)
             os.system("copy " + imageJPG + " " + destListJPG[index])
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
+            log_text.see(END)
 
     print("=======================================================================================")
     print("END")
@@ -325,13 +328,21 @@ def process():
     log_text.see(END)
     log_text.configure(state = "disable")
 
+
+def thread_it(func, *args):
+    t = threading.Thread(target=func, args=args)
+    t.setDaemon(True)
+    t.start()
+
 ###########################################################
 ###########################################################
 
 preview_Button = ttk.Button(mainframe, text = "Preview", command = previewBtn)
 preview_Button.grid(row = 4, column = 2, sticky = (N, S), padx = 5, pady = 10)
 
-process_Button = ttk.Button(mainframe, text = "Execute", command = process, state = "disable")
+# process_Button = ttk.Button(mainframe, text = "Execute", command = process, state = "disable")
+process_Button = ttk.Button(mainframe, text='Execute', command=lambda:thread_it(process), state = "disable")
+
 process_Button.grid(row = 5, column = 2, sticky = (N, S), padx = 5, pady = 5, rowspan = 3)
 
 root.mainloop()
