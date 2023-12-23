@@ -40,8 +40,8 @@ class PrintLogger():
 root = Tk()
 root.title("Image Converter V0.2 [Z.Kang]")
 root.geometry("860x540")
-root.minsize(860, 540)
-root.maxsize(860, 540)
+root.minsize(880, 540)
+root.maxsize(880, 540)
 
 mainframe = ttk.Frame(root, padding = "20 3 12 12")
 mainframe.grid(column = 0, row = 0, sticky = (N, W, E, S))
