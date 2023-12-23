@@ -39,9 +39,9 @@ class PrintLogger():
 #################################################################################################################################
 root = Tk()
 root.title("Image Converter V0.2 [Z.Kang]")
-root.geometry("860x540")
-root.minsize(880, 540)
-root.maxsize(880, 540)
+root.geometry("880x550")
+root.minsize(880, 550)
+root.maxsize(880, 550)
 
 mainframe = ttk.Frame(root, padding = "20 3 12 12")
 mainframe.grid(column = 0, row = 0, sticky = (N, W, E, S))
@@ -110,6 +110,9 @@ logText_scrollbar = Scrollbar(mainframe, orient="vertical", command = log_text.y
 logText_scrollbar.grid(row = 4, column = 1, sticky = (E, N, S), padx = 5, pady = 10, rowspan = 16)
 
 log_text.configure(yscrollcommand = logText_scrollbar.set)
+
+Font_UserChanged = ("Comic Sans MS", 9)
+log_text.configure(font=Font_UserChanged)
 
 # change print output from terminal to tinker loh windows
 pl = PrintLogger(log_text)
