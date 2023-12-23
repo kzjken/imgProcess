@@ -10,10 +10,10 @@ from PIL import Image
 def getExif(imageName):
     listExif = []
     image = Image.open(imageName)
-    dictExif = image.getexif()
+    dictExif = image._getexif()
     # print(dictExif)
-    # DateTimeOriginal = str(dictExif.get(36867))
-    DateTimeOriginal = str(dictExif.get(306))
+    DateTimeOriginal = str(dictExif.get(36867))
+    # DateTimeOriginal = str(dictExif.get(306))
     CameraModel = str(dictExif.get(272))
     Aperture = str(dictExif.get(33437))
     FocalLength = str(dictExif.get(41989))
