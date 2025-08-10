@@ -12,6 +12,7 @@ from datetime import date
 import threading
 
 # ========================== Global Variables ==========================
+Version = "1.0.0"
 srcListJPG = []  # List to store source image file paths
 destListJPG = []  # List to store destination image file paths
 
@@ -29,7 +30,7 @@ class PrintLogger():
 
 # ========================== Main Window Setup ==========================
 root = Tk()
-root.title("Image Converter V0.2 [Z.Kang]")
+root.title(f"Image Converter V{Version} [Z.Kang]")
 root.geometry("1100x700")
 root.minsize(900, 600)
 
@@ -79,15 +80,13 @@ ttk.Label(mainframe, text="1. Rename photos according to EXIF (date, time, camer
 ttk.Checkbutton(mainframe, text="Compress", variable=compressFlag).grid(row=3, column=3, sticky=W, padx=5)
 ttk.Label(mainframe, text="2. Compress photos (reduce image size) using Python PIL").grid(row=3, column=1, sticky=W, padx=5)
 
-# 新建一个Frame用于横向排列Quality相关控件
 quality_frame = ttk.Frame(mainframe)
 quality_frame.grid(row=3, column=2, sticky="e", padx=(10, 0))
 
 ttk.Label(quality_frame, text="Quality:").pack(side="left", padx=(0, 5))
 
-quality_var = IntVar(value=90)
+quality_var = IntVar(value=85)
 def update_quality_label(val):
-    # 步长5
     v = int(round(float(val) / 5) * 5)
     quality_var.set(v)
     quality_value_label.config(text=str(v))
