@@ -7,25 +7,22 @@ from PIL import Image
 #####################################################################################
 # getExif via PIL
 #####################################################################################
-def getExif(imageName):
+def getExif(imageName: str) -> list:
     listExif = []
-    image = Image.open(imageName)
-    dictExif = image._getexif()
-    # print(dictExif)
-    DateTimeOriginal = str(dictExif.get(36867))
-    # DateTimeOriginal = str(dictExif.get(306))
-    CameraModel = str(dictExif.get(272))
-    Aperture = str(dictExif.get(33437))
-    FocalLength = str(dictExif.get(41989))
-    ShutterSpd = str(dictExif.get(33434))
-
-    listExif.append(DateTimeOriginal)
-    listExif.append(CameraModel)
-    listExif.append(Aperture)
-    listExif.append(FocalLength)
-    listExif.append(ShutterSpd)
-    image.close()
-
+    try:
+        with Image.open(imageName) as image:
+            dictExif = image._getexif()
+            if dictExif is None:
+                dictExif = {}
+            DateTimeOriginal = str(dictExif.get(36867, "None"))
+            CameraModel = str(dictExif.get(272, "None"))
+            Aperture = str(dictExif.get(33437, "None"))
+            FocalLength = str(dictExif.get(41989, "None"))
+            ShutterSpd = str(dictExif.get(33434, "None"))
+            listExif = [DateTimeOriginal, CameraModel, Aperture, FocalLength, ShutterSpd]
+    except Exception as e:
+        print(f"Error reading EXIF from {imageName}: {e}")
+        listExif = ["None"] * 5
     return listExif
 
 #####################################################################################
