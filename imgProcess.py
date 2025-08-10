@@ -1,19 +1,20 @@
 import os
 import time
 from PIL import Image
-# debug only
-# import glob
 
 #####################################################################################
-# getExif via PIL
+# Get EXIF info using PIL
 #####################################################################################
 def getExif(imageName: str) -> list:
+    """
+    Extract EXIF information from an image file.
+    Returns a list: [DateTimeOriginal, CameraModel, Aperture, FocalLength, ShutterSpd]
+    If EXIF is missing, returns ["None"] * 5.
+    """
     listExif = []
     try:
         with Image.open(imageName) as image:
-            dictExif = image._getexif()
-            if dictExif is None:
-                dictExif = {}
+            dictExif = image._getexif() or {}
             DateTimeOriginal = str(dictExif.get(36867, "None"))
             CameraModel = str(dictExif.get(272, "None"))
             Aperture = str(dictExif.get(33437, "None"))
@@ -26,11 +27,13 @@ def getExif(imageName: str) -> list:
     return listExif
 
 #####################################################################################
-# rename file according shot time and device
+# Rename file according to EXIF and user structure
 #####################################################################################
 def renameAccExif(imageName, listEXIF, structure, index=1):
-    # listEXIF: [DateTimeOriginal, CameraModel, Aperture, FocalLength, ShutterSpd]
-    # structure: ['index', 'date', 'time', 'camera', 'originalname', 'hash']
+    """
+    Generate a new filename based on EXIF info and user-selected structure.
+    structure: list like ['index', 'date', 'time', 'camera', 'originalname', 'hash']
+    """
     import hashlib
 
     DateTimeOriginal = listEXIF[0]
@@ -38,7 +41,7 @@ def renameAccExif(imageName, listEXIF, structure, index=1):
     filename, file_extension = os.path.splitext(os.path.basename(imageName))
     parts = []
 
-    # 解析日期和时间
+    # Parse date and time
     if DateTimeOriginal != "None" and len(DateTimeOriginal) >= 10:
         date_part = DateTimeOriginal[:10].replace(':', '')
         time_part = DateTimeOriginal[11:].replace(':', '')
@@ -47,13 +50,17 @@ def renameAccExif(imageName, listEXIF, structure, index=1):
         date_part = time.strftime("%Y%m%d", fileModTime)
         time_part = time.strftime("%H%M%S", fileModTime)
 
-    # 计算hash
+    # Calculate hash
     def get_file_md5(path):
         hash_md5 = hashlib.md5()
-        with open(path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()[:8]
+        try:
+            with open(path, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_md5.update(chunk)
+            return hash_md5.hexdigest()[:8]
+        except Exception as e:
+            print(f"Error calculating hash for {path}: {e}")
+            return "00000000"
 
     for key in structure:
         if key == 'index':
@@ -74,93 +81,21 @@ def renameAccExif(imageName, listEXIF, structure, index=1):
     return newname
 
 #####################################################################################
-# rename and compressed image
+# Rename and compress image
 #####################################################################################
 def renAndcompImg(src, dest, quality):
-    img = Image.open(src)
-    if 'exif' in img.info.keys():
-        exif_dict = img.info["exif"]
+    """
+    Save image to dest with given quality, keeping EXIF if present.
+    If dest exists, do nothing.
+    """
+    try:
+        img = Image.open(src)
         if os.path.exists(dest):
-            print('file exists!')
-        else:
-            img.save(dest, quality = quality, optimize = True, exif = exif_dict)
-    else:
-        if not os.path.exists(dest):
-            img.save(dest, quality = quality, optimize = True)
-
-# #####################################################################################
-# # debug only
-# #####################################################################################
-# renameFlag = 1
-# def preview(srcFolder, destfolder, extName):
-#     srcPathIncExtName = srcFolder + "\\*." + extName
-#     filecounter = 0
-#     srcList = []
-#     destList = []
-#     for srcName in glob.glob(srcPathIncExtName):
-#         # if renameFlag.get() == '1':
-#         if renameFlag:
-#             # exifList = imgProcess.getExif(srcName)
-#             exifList = getExif(srcName)
-#             # destName = destfolder + "\\" + imgProcess.renameAccExif(srcName, exifList)
-#             destName = destfolder + "\\" + renameAccExif(srcName, exifList)
-#         else:
-#             destName = destfolder + "\\" + os.path.basename(srcName)
-
-#         srcList.append(srcName)
-#         destList.append(destName)
-#         # if renameFlag.get() == '1':
-#         if renameFlag:
-#             print("  " + str(filecounter + 1) + ': ' + os.path.basename(srcName) + " ==> " + os.path.basename(destName))
-#         else:
-#             print("  " + str(filecounter + 1) + ': ' + os.path.basename(srcName))
-#         filecounter += 1
-
-#     if filecounter > 0:
-#         print("\n找到" + str(filecounter) + "个" + extName + "文件")
-#         print("---------------------------------------------------------------------------------------")
-
-#         # if renameFlag.get() == '1':
-#         if renameFlag:
-#             dupItemIndex = []
-#             dupItem = []
-#             for index, element in enumerate(destList):
-#                 if destList.count(element) > 1:
-#                     if element not in dupItem:
-#                         print("根据命名规则，目标文件" + os.path.basename(element) + "出现" + str(destList.count(element)) + "次，将增加数字后缀")
-#                         dupItem.append(element)
-#                     dupItemIndex.append(index)
-
-#             if len(dupItem) > 0:
-#                 print("结果如下：")
-#                 for item in dupItem:
-#                     suffix = 0
-#                     for index in dupItemIndex:
-#                         if destList[index] == item:
-#                             filename, file_extension = os.path.splitext(destList[index])
-#                             destList[index] = filename + '_' + str(suffix) + file_extension
-#                             print("  " + os.path.basename(destList[index]) + " ==> " + os.path.basename(destList[index]))
-#                             suffix += 1
-#         else:
-#             print("将对所有文件进行低损压缩。")
-
-#         # process_Button.configure(state = "normal")
-#         #compress_checkbutton.configure(state = "disable")
-#         #rename_checkbutton.configure(state = "disable")
-
-#         print("---------------------------------------------------------------------------------------")
-#         print("继续操作，请点击“执行操作”按钮")
-
-#     return filecounter, srcList, destList
-
-# def main():
-#     srcPath = r'Z:\Fotos\手机\7. X8\Snapseed'
-#     destPath = r'Z:\Fotos\手机\7. X8\Snapseed_OPT'
-#     print(srcPath)
-#     print(destPath)
-#     sumJPG, srcList, destList = preview(srcPath, destPath, "jpeg")
-#     # for idx, item in enumerate(srcList):
-#     #     print(str(idx) + ': ' + item + ' ==> ' + destList[idx])
-
-# if __name__ == "__main__":
-#     main()
+            print(f'File exists: {dest}')
+            return
+        save_kwargs = {'quality': quality, 'optimize': True}
+        if 'exif' in img.info:
+            save_kwargs['exif'] = img.info['exif']
+        img.save(dest, **save_kwargs)
+    except Exception as e:
+        print(f"Error processing {src} -> {dest}: {e}")
