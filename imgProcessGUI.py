@@ -91,15 +91,13 @@ def get_structure_selection():
     """Return the list of selected structure fields in order."""
     return [key for label, key in structure_options if structure_vars[key].get() == 1]
 
-# ========================== Row 5: Buttons (Preview/Execute, right aligned) ==========================
-button_frame = ttk.Frame(mainframe)
-button_frame.grid(row=5, column=0, columnspan=4, sticky="e", padx=5, pady=10)
-preview_Button = ttk.Button(button_frame, text="Preview", command=lambda: thread_it(previewBtn))
-preview_Button.pack(side=RIGHT, padx=10)
-process_Button = ttk.Button(button_frame, text='Execute', command=lambda: thread_it(executeBtn), state="disable")
-process_Button.pack(side=RIGHT, padx=10)
+# ========================== Row 5: Buttons (Preview/Execute, Preview在col=2靠右，Execute在col=3靠左) ==========================
+preview_Button = ttk.Button(mainframe, text="Preview", command=lambda: thread_it(previewBtn))
+preview_Button.grid(row=5, column=2, sticky="e", padx=5, pady=5)
+process_Button = ttk.Button(mainframe, text='Execute', command=lambda: thread_it(executeBtn), state="disable")
+process_Button.grid(row=5, column=3, sticky="w", padx=5, pady=5)
 
-# ========================== Row 6: Log Window ==========================
+# ========================== Row 6: Log Window (滚动条紧贴日志区) ==========================
 ttk.Label(mainframe, text="Log:").grid(row=6, column=0, sticky=(N, E), padx=5, pady=10)
 log_text = Text(mainframe, width=120, height=22, state="disabled")
 log_text.grid(row=6, column=1, columnspan=2, sticky="nsew", padx=5, pady=10)
