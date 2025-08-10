@@ -141,6 +141,12 @@ log_text.configure(yscrollcommand=logText_scrollbar.set)
 Font_UserChanged = ("Comic Sans MS", 9)
 log_text.configure(font=Font_UserChanged)
 
+# ========================== Row 7: Progress Bar ==========================
+progress_var = DoubleVar()
+progress_bar = ttk.Progressbar(mainframe, variable=progress_var, maximum=100, mode="determinate")
+progress_bar.grid(row=7, column=1, columnspan=3, sticky="ew", padx=5, pady=(0, 10))
+progress_bar.grid_remove()  # Hide progress bar initially
+
 # Configure column and row weights for resizing
 mainframe.columnconfigure(1, weight=1)
 mainframe.columnconfigure(2, weight=0)
@@ -162,18 +168,23 @@ def checkPath(srcFolder, destFolder):
     print("check path:")
     if srcFolder == "":
         print("  Error: Source path is empty, please select...")
+        messagebox.showerror("Error", "Source path is empty, please select a folder.")
         return False
     if not os.path.exists(srcFolder):
         print("  Error: Source path doesn't exist, please reselect...")
+        messagebox.showerror("Error", "Source path doesn't exist, please reselect.")
         return False
     if not os.path.isdir(srcFolder):
         print("  Error: Source path invalid, please reselect...")
+        messagebox.showerror("Error", "Source path is not a folder, please reselect.")
         return False
     if not os.listdir(srcFolder):
         print("  Error: No images in source folder, please reselect...")
+        messagebox.showerror("Error", "No images in source folder, please reselect.")
         return False
     if destFolder == "":
         print("  Error: Destination path invalid, please reselect...")
+        messagebox.showerror("Error", "Destination path is empty, please reselect.")
         return False
     return True
 
@@ -204,7 +215,13 @@ def preview(srcFolder, destFolder, extName):
     srcList = []
     destList = []
     structure = get_structure_selection()
-    for srcName in glob.glob(srcPathIncExtName):
+    file_list = glob.glob(srcPathIncExtName)
+    total_files = len(file_list)
+    if total_files > 0:
+        progress_bar.grid()
+        progress_var.set(0)
+        root.update_idletasks()
+    for srcName in file_list:
         if renameFlag.get() == '1':
             exifList = imgProcess.getExif(srcName)
             destName = destFolder + "\\" + imgProcess.renameAccExif(
@@ -221,6 +238,13 @@ def preview(srcFolder, destFolder, extName):
             print("  " + str(fileCounter + 1) + ': ' + os.path.basename(srcName))
             log_text.see(END)
         fileCounter += 1
+        if total_files > 0:
+            progress_var.set(fileCounter / total_files * 100)
+            root.update_idletasks()
+    if total_files > 0:
+        progress_var.set(100)
+        root.update_idletasks()
+        progress_bar.grid_remove()
     if fileCounter > 0:
         print("\n" + str(fileCounter) + " " + extName + " files found.")
         print("---------------------------------------------------------------------------------------")
@@ -301,17 +325,32 @@ def executeBtn():
                 os.makedirs(destPathVal)
                 print("  Create destination folder: " + destPathVal)
     process_Button.configure(state="disable")
+    total_files = len(srcListJPG)
+    if total_files > 0:
+        progress_bar.grid()
+        progress_var.set(0)
+        root.update_idletasks()
     # Process images: compress or just copy
     if compressFlag.get() == '1':
         for index, imageJPG in enumerate(srcListJPG):
             imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
             log_text.see(END)
+            if total_files > 0:
+                progress_var.set((index + 1) / total_files * 100)
+                root.update_idletasks()
     else:
         for index, imageJPG in enumerate(srcListJPG):
             os.system("copy " + imageJPG + " " + destListJPG[index])
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
             log_text.see(END)
+            if total_files > 0:
+                progress_var.set((index + 1) / total_files * 100)
+                root.update_idletasks()
+    if total_files > 0:
+        progress_var.set(100)
+        root.update_idletasks()
+        progress_bar.grid_remove()
     print("=======================================================================================")
     print("END")
     log_text.see(END)
