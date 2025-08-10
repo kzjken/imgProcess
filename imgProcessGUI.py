@@ -85,7 +85,7 @@ quality_frame.grid(row=3, column=2, sticky="e", padx=(10, 0))
 
 ttk.Label(quality_frame, text="Quality:").pack(side="left", padx=(0, 5))
 
-quality_var = IntVar(value=85)
+quality_var = IntVar(value=90)
 def update_quality_label(val):
     # 步长5
     v = int(round(float(val) / 5) * 5)
@@ -141,8 +141,15 @@ def toggle_structure_frame(*args):
 renameFlag.trace_add('write', toggle_structure_frame)
 toggle_structure_frame()  # Set initial state
 
-# ========================== Row 5: Buttons (Preview/Execute) ==========================
-# Preview and Execute buttons
+# ========================== Row 5: Buttons (Plot/Preview/Execute) ==========================
+def plot_focal_length_btn():
+    srcPathVal = srcPath_entry.get()
+    if checkPath(srcPathVal, destPath_entry.get()):
+        imgProcess.plot_focal_length_distribution(srcPathVal)
+
+plotFL_Button = ttk.Button(mainframe, text="Plot Focal Length", command=lambda: thread_it(plot_focal_length_btn))
+plotFL_Button.grid(row=5, column=1, sticky="e", padx=5, pady=5)
+
 preview_Button = ttk.Button(mainframe, text="Preview", command=lambda: thread_it(previewBtn))
 preview_Button.grid(row=5, column=2, sticky="e", padx=5, pady=5)
 process_Button = ttk.Button(mainframe, text='Execute', command=lambda: thread_it(executeBtn), state="disable")

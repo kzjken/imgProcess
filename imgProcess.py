@@ -1,6 +1,8 @@
 import os
 import time
+import glob
 from PIL import Image
+import matplotlib.pyplot as plt
 
 #####################################################################################
 # Get EXIF info using PIL
@@ -99,3 +101,49 @@ def renAndcompImg(src, dest, quality):
         img.save(dest, **save_kwargs)
     except Exception as e:
         print(f"Error processing {src} -> {dest}: {e}")
+
+def plot_focal_length_distribution(src_folder):
+    """
+    Scan all jpg images in src_folder, extract focal length, and plot a pie chart.
+    """
+    srcPathIncExtName = os.path.join(src_folder, "*.jpg")
+    listImage = glob.glob(srcPathIncExtName)
+    imageCount = len(listImage)
+    if imageCount == 0:
+        print(f"  Error: no images found in {src_folder}, please reselect!")
+        print("="*80)
+        return
+
+    print(f"  {imageCount} images found in {src_folder}")
+    print("="*80)
+
+    listAllEXIF = []
+    for srcName in listImage:
+        exifList = getExif(srcName)
+        exifList.insert(0, os.path.basename(srcName))
+        listAllEXIF.append(exifList)
+
+    focalLengthList = []
+    for item in listAllEXIF:
+        focalLengthList.append(item[4])
+    noneFlCount = focalLengthList.count("None")
+    focalLengthList = [float(x) for x in focalLengthList if x != "None"]
+
+    # 统计各焦距出现次数
+    from collections import Counter
+    fl_counter = Counter(focalLengthList)
+    labels = []
+    values = []
+    for fl, count in sorted(fl_counter.items()):
+        labels.append(f"{fl}mm = {count}")
+        values.append(count)
+
+    if not values:
+        print("No valid focal length data found.")
+        return
+
+    fig1, ax1 = plt.subplots()
+    ax1.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.title("Focal Length Distribution")
+    plt.show()
