@@ -28,32 +28,50 @@ def getExif(imageName: str) -> list:
 #####################################################################################
 # rename file according shot time and device
 #####################################################################################
-def renameAccExif(imageName, listEXIF):
+def renameAccExif(imageName, listEXIF, structure, index=1):
+    # listEXIF: [DateTimeOriginal, CameraModel, Aperture, FocalLength, ShutterSpd]
+    # structure: ['index', 'date', 'time', 'camera', 'originalname', 'hash']
+    import hashlib
+
     DateTimeOriginal = listEXIF[0]
     CameraModel = listEXIF[1]
+    filename, file_extension = os.path.splitext(os.path.basename(imageName))
+    parts = []
 
-    # new filename part 1: time
-    filenameRaw = ""
-    if DateTimeOriginal != "None":
-        filenameRaw = DateTimeOriginal
+    # 解析日期和时间
+    if DateTimeOriginal != "None" and len(DateTimeOriginal) >= 10:
+        date_part = DateTimeOriginal[:10].replace(':', '')
+        time_part = DateTimeOriginal[11:].replace(':', '')
     else:
         fileModTime = time.localtime(os.stat(imageName).st_mtime)
-        filenameRaw = time.strftime("%Y%m%d_%H%M%S", fileModTime)
+        date_part = time.strftime("%Y%m%d", fileModTime)
+        time_part = time.strftime("%H%M%S", fileModTime)
 
-    #print(filenameRaw)
+    # 计算hash
+    def get_file_md5(path):
+        hash_md5 = hashlib.md5()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()[:8]
 
-    filenameRaw = filenameRaw.replace(':','')
-    filenameRaw = filenameRaw.replace(' ','_')
+    for key in structure:
+        if key == 'index':
+            parts.append(str(index))
+        elif key == 'date':
+            parts.append(date_part)
+        elif key == 'time':
+            parts.append(time_part)
+        elif key == 'camera':
+            if CameraModel != "None":
+                parts.append(CameraModel.replace(' ', ''))
+        elif key == 'originalname':
+            parts.append(filename)
+        elif key == 'hash':
+            parts.append(get_file_md5(imageName))
 
-    # new filename part 2: device part
-    if CameraModel != "None":
-        filenameRaw = filenameRaw + "_" + CameraModel
-    filenameRaw = filenameRaw.replace(' ','')
-
-    filename, file_extension = os.path.splitext(imageName)
-    filenameRaw += file_extension
-
-    return filenameRaw
+    newname = '_'.join(parts) + file_extension
+    return newname
 
 #####################################################################################
 # rename and compressed image
