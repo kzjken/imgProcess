@@ -12,3 +12,6 @@ resources/tmp/
 osFunc.py
 test.py
 .gitignore
+test/
+Note.md
+imgProcessGUI.dist/
