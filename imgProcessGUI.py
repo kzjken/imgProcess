@@ -77,7 +77,27 @@ compressFlag = StringVar(value="1")
 ttk.Checkbutton(mainframe, text="Rename", variable=renameFlag).grid(row=2, column=3, sticky=W, padx=5)
 ttk.Label(mainframe, text="1. Rename photos according to EXIF (date, time, camera, etc.)").grid(row=2, column=1, columnspan=2, sticky=W, padx=5, pady=5)
 ttk.Checkbutton(mainframe, text="Compress", variable=compressFlag).grid(row=3, column=3, sticky=W, padx=5)
-ttk.Label(mainframe, text="2. Compress photos (reduce image size) using Python PIL").grid(row=3, column=1, columnspan=2, sticky=W, padx=5)
+ttk.Label(mainframe, text="2. Compress photos (reduce image size) using Python PIL").grid(row=3, column=1, sticky=W, padx=5)
+
+# 新建一个Frame用于横向排列Quality相关控件
+quality_frame = ttk.Frame(mainframe)
+quality_frame.grid(row=3, column=2, sticky="e", padx=(10, 0))
+
+ttk.Label(quality_frame, text="Quality:").pack(side="left", padx=(0, 5))
+
+quality_var = IntVar(value=85)
+def update_quality_label(val):
+    # 步长5
+    v = int(round(float(val) / 5) * 5)
+    quality_var.set(v)
+    quality_value_label.config(text=str(v))
+
+quality_slider = ttk.Scale(quality_frame, from_=10, to=100, orient="horizontal", variable=quality_var, command=update_quality_label)
+quality_slider.config(length=100)
+quality_slider.pack(side="left", padx=(0, 5))
+
+quality_value_label = ttk.Label(quality_frame, text=str(quality_var.get()), width=3)
+quality_value_label.pack(side="left")
 
 # ========================== Row 4: Rename Structure (Label + Checkboxes) ==========================
 # Checkboxes for rename structure options
@@ -333,7 +353,7 @@ def executeBtn():
     # Process images: compress or just copy
     if compressFlag.get() == '1':
         for index, imageJPG in enumerate(srcListJPG):
-            imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)
+            imgProcess.renAndcompImg(imageJPG, destListJPG[index], quality_var.get())
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
             log_text.see(END)
             if total_files > 0:
