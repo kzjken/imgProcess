@@ -97,15 +97,25 @@ preview_Button.grid(row=5, column=2, sticky="e", padx=5, pady=5)
 process_Button = ttk.Button(mainframe, text='Execute', command=lambda: thread_it(executeBtn), state="disable")
 process_Button.grid(row=5, column=3, sticky="w", padx=5, pady=5)
 
-# ========================== Row 6: Log Window (滚动条紧贴日志区) ==========================
+# ========================== Row 6: Log Window (Text+Scrollbar in a Frame, always together) ==========================
 ttk.Label(mainframe, text="Log:").grid(row=6, column=0, sticky=(N, E), padx=5, pady=10)
-log_text = Text(mainframe, width=120, height=22, state="disabled")
-log_text.grid(row=6, column=1, columnspan=2, sticky="nsew", padx=5, pady=10)
-logText_scrollbar = Scrollbar(mainframe, orient="vertical", command=log_text.yview)
-logText_scrollbar.grid(row=6, column=3, sticky="ns", padx=2, pady=10)
+
+log_frame = ttk.Frame(mainframe)
+log_frame.grid(row=6, column=1, columnspan=3, sticky="nsew", padx=5, pady=10)  # columnspan=2
+
+log_text = Text(log_frame, width=90, height=22, state="disabled")  # width可适当调小
+log_text.pack(side=LEFT, fill=BOTH, expand=True)
+logText_scrollbar = Scrollbar(log_frame, orient="vertical", command=log_text.yview)
+logText_scrollbar.pack(side=RIGHT, fill=Y)
 log_text.configure(yscrollcommand=logText_scrollbar.set)
 Font_UserChanged = ("Comic Sans MS", 9)
 log_text.configure(font=Font_UserChanged)
+
+# 只让col=1自适应
+mainframe.columnconfigure(1, weight=1)
+mainframe.columnconfigure(2, weight=0)
+mainframe.columnconfigure(3, weight=0)
+mainframe.rowconfigure(6, weight=1)
 
 # Make log area expand with window
 mainframe.columnconfigure(1, weight=1)
