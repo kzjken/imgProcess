@@ -12,8 +12,8 @@ from datetime import date
 import threading
 
 # ========================== Global Variables ==========================
-srcListJPG = []
-destListJPG = []
+srcListJPG = []  # List to store source image file paths
+destListJPG = []  # List to store destination image file paths
 
 # ========================== Redirect stdout to GUI ==========================
 class PrintLogger():
@@ -33,36 +33,46 @@ root.title("Image Converter V0.2 [Z.Kang]")
 root.geometry("1100x700")
 root.minsize(900, 600)
 
+# Main frame for all widgets
 mainframe = ttk.Frame(root, padding="20 10 20 10")
 mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
 # ========================== Row 0: Source Path ==========================
+# Label and entry for source folder
 ttk.Label(mainframe, text="Source path:").grid(row=0, column=0, sticky=E, padx=5, pady=5)
 srcPath = StringVar()
 srcPath_entry = ttk.Entry(mainframe, width=60, textvariable=srcPath)
 srcPath_entry.grid(row=0, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+
 def selectSrcDir():
+    """Open dialog to select source directory and set default destination."""
     filepath = os.path.normpath(filedialog.askdirectory())
     srcPath.set(filepath)
     if os.path.exists(filepath):
         destPath.set(filepath + "_OUT")
+
 ttk.Button(mainframe, text="Browse", command=selectSrcDir).grid(row=0, column=3, sticky=W, padx=5, pady=5)
 
 # ========================== Row 1: Destination Path ==========================
+# Label and entry for destination folder
 ttk.Label(mainframe, text="Destination path:").grid(row=1, column=0, sticky=E, padx=5, pady=5)
 destPath = StringVar()
 destPath_entry = ttk.Entry(mainframe, width=60, textvariable=destPath)
 destPath_entry.grid(row=1, column=1, columnspan=2, sticky="ew", padx=5, pady=5)
+
 def modDestDir():
+    """Open dialog to select destination directory."""
     filepath = os.path.normpath(filedialog.askdirectory())
     destPath.set(filepath)
+
 ttk.Button(mainframe, text="Change", command=modDestDir).grid(row=1, column=3, sticky=W, padx=5, pady=5)
 
 # ========================== Row 2: Function Selection ==========================
+# Function selection: Rename and Compress
 ttk.Label(mainframe, text="Functions:").grid(row=2, column=0, sticky=E, padx=5, pady=5)
-renameFlag = StringVar(value="1")
+renameFlag = StringVar(value="1")  # "1" means checked
 compressFlag = StringVar(value="1")
 ttk.Checkbutton(mainframe, text="Rename", variable=renameFlag).grid(row=2, column=3, sticky=W, padx=5)
 ttk.Label(mainframe, text="1. Rename photos according to EXIF (date, time, camera, etc.)").grid(row=2, column=1, columnspan=2, sticky=W, padx=5, pady=5)
@@ -70,6 +80,7 @@ ttk.Checkbutton(mainframe, text="Compress", variable=compressFlag).grid(row=3, c
 ttk.Label(mainframe, text="2. Compress photos (reduce image size) using Python PIL").grid(row=3, column=1, columnspan=2, sticky=W, padx=5)
 
 # ========================== Row 4: Rename Structure (Label + Checkboxes) ==========================
+# Checkboxes for rename structure options
 ttk.Label(mainframe, text="Rename Structure:").grid(row=4, column=0, sticky=E, padx=5, pady=5)
 structure_options = [
     ("Index", "index"),
@@ -79,7 +90,7 @@ structure_options = [
     ("Camera", "camera"),
     ("Hash", "hash"),
 ]
-structure_vars = {}
+structure_vars = {}  # Store IntVar for each option
 default_checked = {"date", "time", "camera"}
 structure_frame = ttk.Frame(mainframe)
 structure_frame.grid(row=4, column=1, columnspan=3, sticky="w", padx=5, pady=5)
@@ -87,38 +98,42 @@ for i, (label, key) in enumerate(structure_options):
     var = IntVar(value=1 if key in default_checked else 0)
     structure_vars[key] = var
     ttk.Checkbutton(structure_frame, text=label, variable=var).grid(row=0, column=i, sticky="w", padx=10)
+
 def get_structure_selection():
     """Return the list of selected structure fields in order."""
     return [key for label, key in structure_options if structure_vars[key].get() == 1]
 
 def set_structure_frame_state(enabled=True):
+    """Enable or disable all checkboxes in the rename structure row."""
     state = "normal" if enabled else "disabled"
     for child in structure_frame.winfo_children():
         if isinstance(child, ttk.Checkbutton):
             child.state(["!disabled"] if enabled else ["disabled"])
 
 def toggle_structure_frame(*args):
+    """Callback to enable/disable rename structure checkboxes based on Rename flag."""
     if renameFlag.get() == '1':
         set_structure_frame_state(True)
     else:
         set_structure_frame_state(False)
 
+# Trace the Rename checkbox to enable/disable structure options
 renameFlag.trace_add('write', toggle_structure_frame)
-toggle_structure_frame()  # 初始化时根据默认值设置
+toggle_structure_frame()  # Set initial state
 
-# ========================== Row 5: Buttons (Preview/Execute, Preview在col=2靠右，Execute在col=3靠左) ==========================
+# ========================== Row 5: Buttons (Preview/Execute) ==========================
+# Preview and Execute buttons
 preview_Button = ttk.Button(mainframe, text="Preview", command=lambda: thread_it(previewBtn))
 preview_Button.grid(row=5, column=2, sticky="e", padx=5, pady=5)
 process_Button = ttk.Button(mainframe, text='Execute', command=lambda: thread_it(executeBtn), state="disable")
 process_Button.grid(row=5, column=3, sticky="w", padx=5, pady=5)
 
-# ========================== Row 6: Log Window (Text+Scrollbar in a Frame, always together) ==========================
+# ========================== Row 6: Log Window (Text+Scrollbar in a Frame) ==========================
+# Log area with vertical scrollbar
 ttk.Label(mainframe, text="Log:").grid(row=6, column=0, sticky=(N, E), padx=5, pady=10)
-
 log_frame = ttk.Frame(mainframe)
-log_frame.grid(row=6, column=1, columnspan=3, sticky="nsew", padx=5, pady=10)  # columnspan=2
-
-log_text = Text(log_frame, width=90, height=22, state="disabled")  # width可适当调小
+log_frame.grid(row=6, column=1, columnspan=3, sticky="nsew", padx=5, pady=10)
+log_text = Text(log_frame, width=90, height=22, state="disabled")
 log_text.pack(side=LEFT, fill=BOTH, expand=True)
 logText_scrollbar = Scrollbar(log_frame, orient="vertical", command=log_text.yview)
 logText_scrollbar.pack(side=RIGHT, fill=Y)
@@ -126,13 +141,11 @@ log_text.configure(yscrollcommand=logText_scrollbar.set)
 Font_UserChanged = ("Comic Sans MS", 9)
 log_text.configure(font=Font_UserChanged)
 
-# 只让col=1自适应
+# Configure column and row weights for resizing
 mainframe.columnconfigure(1, weight=1)
 mainframe.columnconfigure(2, weight=0)
 mainframe.columnconfigure(3, weight=0)
 mainframe.rowconfigure(6, weight=1)
-
-# Make log area expand with window
 mainframe.columnconfigure(1, weight=1)
 mainframe.columnconfigure(2, weight=1)
 mainframe.rowconfigure(6, weight=1)
@@ -165,7 +178,7 @@ def checkPath(srcFolder, destFolder):
     return True
 
 def checkCheckButton():
-    """Check if at least one function is selected."""
+    """Check if at least one function is selected (Rename or Compress)."""
     invalidCounter = 0
     print("Check selected options:")
     if renameFlag.get() == '1':
@@ -211,7 +224,7 @@ def preview(srcFolder, destFolder, extName):
     if fileCounter > 0:
         print("\n" + str(fileCounter) + " " + extName + " files found.")
         print("---------------------------------------------------------------------------------------")
-        # Check for name conflicts
+        # Check for name conflicts in destination filenames
         if renameFlag.get() == '1':
             dupItemIndex = []
             dupItem = []
@@ -241,6 +254,7 @@ def preview(srcFolder, destFolder, extName):
 
 # ========================== Preview Button Callback ==========================
 def previewBtn():
+    """Callback for Preview button. Shows preview of actions in log."""
     log_text.configure(state="normal")
     log_text.delete('1.0', END)
     srcPathVal = srcPath_entry.get()
@@ -270,12 +284,14 @@ def previewBtn():
 
 # ========================== Execute Button Callback ==========================
 def executeBtn():
+    """Callback for Execute button. Processes images as previewed."""
     log_text.configure(state="normal")
     print("=======================================================================================")
     print("=======================================================================================")
     print("Start processing")
     srcPathVal = srcPath_entry.get()
     destPathVal = destPath_entry.get()
+    # Create destination folder if it does not exist
     if not os.path.exists(destPathVal):
         if destPathVal == srcPathVal + "_OUT":
             os.makedirs(destPathVal)
@@ -285,6 +301,7 @@ def executeBtn():
                 os.makedirs(destPathVal)
                 print("  Create destination folder: " + destPathVal)
     process_Button.configure(state="disable")
+    # Process images: compress or just copy
     if compressFlag.get() == '1':
         for index, imageJPG in enumerate(srcListJPG):
             imgProcess.renAndcompImg(imageJPG, destListJPG[index], 85)
@@ -302,6 +319,7 @@ def executeBtn():
 
 # ========================== Thread Helper ==========================
 def thread_it(func, *args):
+    """Run a function in a separate thread to avoid blocking the GUI."""
     t = threading.Thread(target=func, args=args)
     t.setDaemon(True)
     t.start()
