@@ -91,6 +91,21 @@ def get_structure_selection():
     """Return the list of selected structure fields in order."""
     return [key for label, key in structure_options if structure_vars[key].get() == 1]
 
+def set_structure_frame_state(enabled=True):
+    state = "normal" if enabled else "disabled"
+    for child in structure_frame.winfo_children():
+        if isinstance(child, ttk.Checkbutton):
+            child.state(["!disabled"] if enabled else ["disabled"])
+
+def toggle_structure_frame(*args):
+    if renameFlag.get() == '1':
+        set_structure_frame_state(True)
+    else:
+        set_structure_frame_state(False)
+
+renameFlag.trace_add('write', toggle_structure_frame)
+toggle_structure_frame()  # 初始化时根据默认值设置
+
 # ========================== Row 5: Buttons (Preview/Execute, Preview在col=2靠右，Execute在col=3靠左) ==========================
 preview_Button = ttk.Button(mainframe, text="Preview", command=lambda: thread_it(previewBtn))
 preview_Button.grid(row=5, column=2, sticky="e", padx=5, pady=5)
