@@ -140,6 +140,16 @@ def toggle_structure_frame(*args):
 renameFlag.trace_add('write', toggle_structure_frame)
 toggle_structure_frame()  # Set initial state
 
+def toggle_quality_slider(*args):
+    """Callback to enable/disable quality slider based on Compress flag."""
+    if compressFlag.get() == '1':
+        quality_slider.state(["!disabled"])
+    else:
+        quality_slider.state(["disabled"])
+
+compressFlag.trace_add('write', toggle_quality_slider)
+toggle_quality_slider()  # Set initial state
+
 # ========================== Row 5: Buttons (Preview/Execute) ==========================
 # Preview and Execute buttons
 preview_Button = ttk.Button(mainframe, text="Preview", command=lambda: thread_it(previewBtn))
