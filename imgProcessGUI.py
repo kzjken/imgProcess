@@ -10,6 +10,7 @@ import sys
 from datetime import datetime
 from datetime import date
 import threading
+import shutil
 
 # ========================== Global Variables ==========================
 Version = "1.0.0"
@@ -118,6 +119,11 @@ for i, (label, key) in enumerate(structure_options):
     structure_vars[key] = var
     ttk.Checkbutton(structure_frame, text=label, variable=var).grid(row=0, column=i, sticky="w", padx=10)
 
+# Overwrite checkbox
+overwriteFlag = StringVar(value="0")
+overwriteCheckbox = ttk.Checkbutton(mainframe, text="Overwrite", variable=overwriteFlag)
+overwriteCheckbox.grid(row=4, column=3, sticky='w', padx=5)
+
 def get_structure_selection():
     """Return the list of selected structure fields in order."""
     return [key for label, key in structure_options if structure_vars[key].get() == 1]
@@ -144,11 +150,24 @@ def toggle_quality_slider(*args):
     """Callback to enable/disable quality slider based on Compress flag."""
     if compressFlag.get() == '1':
         quality_slider.state(["!disabled"])
+        overwriteCheckbox.state(["disabled"])
     else:
         quality_slider.state(["disabled"])
+        overwriteCheckbox.state(["!disabled"])
 
 compressFlag.trace_add('write', toggle_quality_slider)
 toggle_quality_slider()  # Set initial state
+
+
+def toggle_destination_path(*args):
+    """Callback to enable/disable destination path based on Overwrite flag."""
+    if overwriteFlag.get() == '1':
+        destPath.set(srcPath.get())
+
+# Trace the overwrite checkbox to change destination path same as source path
+overwriteFlag.trace_add('write', toggle_destination_path)
+toggle_destination_path()  # Set initial state
+
 
 # ========================== Row 5: Buttons (Preview/Execute) ==========================
 # Preview and Execute buttons
@@ -370,7 +389,10 @@ def executeBtn():
                 root.update_idletasks()
     else:
         for index, imageJPG in enumerate(srcListJPG):
-            os.system("copy " + imageJPG + " " + destListJPG[index])
+            if overwriteFlag:
+                shutil.copy(imageJPG, destListJPG[index])
+            else:
+                shutil.move(imageJPG, destListJPG[index])
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
             log_text.see(END)
             if total_files > 0:
