@@ -390,9 +390,9 @@ def executeBtn():
     else:
         for index, imageJPG in enumerate(srcListJPG):
             if overwriteFlag:
-                shutil.copy(imageJPG, destListJPG[index])
-            else:
                 shutil.move(imageJPG, destListJPG[index])
+            else:
+                shutil.copy(imageJPG, destListJPG[index])
             print(str(index + 1) + ': ' + os.path.basename(imageJPG) + " ==> " + os.path.basename(destListJPG[index]))
             log_text.see(END)
             if total_files > 0:
