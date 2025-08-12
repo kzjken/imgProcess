@@ -85,7 +85,7 @@ def renameAccExif(imageName, listEXIF, structure, listLength, index=1):
             parts.append(get_file_md5(imageName))
 
     newname = '_'.join(parts) + file_extension
-    return newname
+    return newname.replace('\x00', '')
 
 #####################################################################################
 # Rename and compress image
