@@ -103,6 +103,7 @@ quality_value_label.pack(side="left")
 # Checkboxes for rename structure options
 ttk.Label(mainframe, text="Rename Structure:").grid(row=4, column=0, sticky=E, padx=5, pady=5)
 structure_options = [
+    ("Foldername", "foldername"),
     ("Index", "index"),
     ("Date", "date"),
     ("Time", "time"),
@@ -119,10 +120,10 @@ for i, (label, key) in enumerate(structure_options):
     structure_vars[key] = var
     ttk.Checkbutton(structure_frame, text=label, variable=var).grid(row=0, column=i, sticky="w", padx=10)
 
-# Overwrite checkbox
-overwriteFlag = StringVar(value="0")
-overwriteCheckbox = ttk.Checkbutton(mainframe, text="Overwrite", variable=overwriteFlag)
-overwriteCheckbox.grid(row=4, column=3, sticky='w', padx=5)
+# # Overwrite checkbox
+# overwriteFlag = StringVar(value="0")
+# overwriteCheckbox = ttk.Checkbutton(mainframe, text="Overwrite", variable=overwriteFlag)
+# overwriteCheckbox.grid(row=4, column=3, sticky='w', padx=5)
 
 def get_structure_selection():
     """Return the list of selected structure fields in order."""
@@ -150,23 +151,23 @@ def toggle_quality_slider(*args):
     """Callback to enable/disable quality slider based on Compress flag."""
     if compressFlag.get() == '1':
         quality_slider.state(["!disabled"])
-        overwriteCheckbox.state(["disabled"])
+        # overwriteCheckbox.state(["disabled"])
     else:
         quality_slider.state(["disabled"])
-        overwriteCheckbox.state(["!disabled"])
+        # overwriteCheckbox.state(["!disabled"])
 
 compressFlag.trace_add('write', toggle_quality_slider)
 toggle_quality_slider()  # Set initial state
 
 
-def toggle_destination_path(*args):
-    """Callback to enable/disable destination path based on Overwrite flag."""
-    if overwriteFlag.get() == '1':
-        destPath.set(srcPath.get())
+# def toggle_destination_path(*args):
+#     """Callback to enable/disable destination path based on Overwrite flag."""
+#     if overwriteFlag.get() == '1':
+#         destPath.set(srcPath.get())
 
-# Trace the overwrite checkbox to change destination path same as source path
-overwriteFlag.trace_add('write', toggle_destination_path)
-toggle_destination_path()  # Set initial state
+# # Trace the overwrite checkbox to change destination path same as source path
+# overwriteFlag.trace_add('write', toggle_destination_path)
+# toggle_destination_path()  # Set initial state
 
 
 # ========================== Row 5: Buttons (Preview/Execute) ==========================
@@ -278,9 +279,7 @@ def preview(srcFolder, destFolder):
     for srcName in file_list:
         if renameFlag.get() == '1':
             exifList = imgProcess.getExif(srcName)
-            destName = destFolder + "\\" + imgProcess.renameAccExif(
-                srcName, exifList, structure, index=fileCounter+1
-            )
+            destName = destFolder + "\\" + imgProcess.renameAccExif(srcName, exifList, structure, total_files, index=fileCounter+1)
         else:
             destName = destFolder + "\\" + os.path.basename(srcName)
         srcList.append(srcName)
@@ -395,7 +394,7 @@ def executeBtn():
                 root.update_idletasks()
     else:
         for index, imageJPG in enumerate(srcListJPG):
-            if overwriteFlag:
+            if srcPathVal == destPathVal:
                 shutil.move(imageJPG, destListJPG[index])
             else:
                 shutil.copy(imageJPG, destListJPG[index])

@@ -29,7 +29,11 @@ def getExif(imageName: str) -> list:
 #####################################################################################
 # Rename file according to EXIF and user structure
 #####################################################################################
-def renameAccExif(imageName, listEXIF, structure, index=1):
+def format_index(idx, list_length):
+    width = max(1, len(str(list_length - 1)))
+    return f"{idx:0{width}d}"
+
+def renameAccExif(imageName, listEXIF, structure, listLength, index=1):
     """
     Generate a new filename based on EXIF info and user-selected structure.
     structure: list like ['index', 'date', 'time', 'camera', 'originalname', 'hash']
@@ -63,8 +67,11 @@ def renameAccExif(imageName, listEXIF, structure, index=1):
             return "00000000"
 
     for key in structure:
-        if key == 'index':
-            parts.append(str(index))
+        if key == 'foldername':
+            folder_name = os.path.basename(os.path.dirname(imageName))
+            parts.append(folder_name.replace(' ', ''))
+        elif key == 'index':
+            parts.append(str(format_index(index, listLength)))
         elif key == 'date':
             parts.append(date_part)
         elif key == 'time':
