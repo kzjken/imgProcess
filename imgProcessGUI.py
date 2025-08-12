@@ -4,7 +4,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 
 import os
-import glob
+from pathlib import Path
 import imgProcess
 import sys
 from datetime import datetime
@@ -256,14 +256,20 @@ def checkCheckButton():
     return True
 
 # ========================== Preview Function ==========================
-def preview(srcFolder, destFolder, extName):
+def preview(srcFolder, destFolder):
     """Preview the changes before processing."""
-    srcPathIncExtName = srcFolder + "\\*." + extName
     fileCounter = 0
     srcList = []
     destList = []
     structure = get_structure_selection()
-    file_list = glob.glob(srcPathIncExtName)
+
+    # Using pathlib for better path handling
+    extensions = ["*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp", "*.webp"]
+    file_list = []
+    for ext in extensions:
+        file_list.extend(Path(srcFolder).glob(ext))
+    file_list = [str(p) for p in file_list]
+
     total_files = len(file_list)
     if total_files > 0:
         progress_bar.grid()
@@ -294,7 +300,7 @@ def preview(srcFolder, destFolder, extName):
         root.update_idletasks()
         progress_bar.grid_remove()
     if fileCounter > 0:
-        print("\n" + str(fileCounter) + " " + extName + " files found.")
+        print(f"\n{fileCounter} files found.")
         print("---------------------------------------------------------------------------------------")
         # Check for name conflicts in destination filenames
         if renameFlag.get() == '1':
@@ -338,7 +344,7 @@ def previewBtn():
             print("function checked: ok.")
             print("=======================================================================================")
             print("Preview:")
-            sumJPG, srcList, destList = preview(srcPathVal, destPathVal, "jpg")
+            sumJPG, srcList, destList = preview(srcPathVal, destPathVal)
             srcListJPG.clear()
             destListJPG.clear()
             for item in srcList:
