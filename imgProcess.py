@@ -76,9 +76,9 @@ def renameAccExif(imageName, listEXIF, structure, listLength, index=1):
                 phash = imagehash.phash(img)
                 return str(phash)
         except Exception as e:
-            print(f"Error processing {file_path}: {e}")
+            # print(f"Error processing {file_path}: {e}")
             # send2trash(file_path)
-            return None
+            return '000000000000000'
 
     for key in structure:
         if key == 'foldername':
