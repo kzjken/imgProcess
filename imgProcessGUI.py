@@ -109,7 +109,7 @@ structure_options = [
     ("Time", "time"),
     ("OriginalName", "originalname"),
     ("Camera", "camera"),
-    ("Hash", "hash"),
+    ("pHash", "hash"),
 ]
 structure_vars = {}  # Store IntVar for each option
 default_checked = {"date", "time", "camera"}

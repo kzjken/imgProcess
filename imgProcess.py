@@ -1,6 +1,7 @@
 import os
 import time
 from PIL import Image
+import imagehash
 
 #####################################################################################
 # Get EXIF info using PIL
@@ -38,7 +39,7 @@ def renameAccExif(imageName, listEXIF, structure, listLength, index=1):
     Generate a new filename based on EXIF info and user-selected structure.
     structure: list like ['index', 'date', 'time', 'camera', 'originalname', 'hash']
     """
-    import hashlib
+    # import hashlib
 
     DateTimeOriginal = listEXIF[0]
     CameraModel = listEXIF[1]
@@ -54,17 +55,30 @@ def renameAccExif(imageName, listEXIF, structure, listLength, index=1):
         date_part = time.strftime("%Y%m%d", fileModTime)
         time_part = time.strftime("%H%M%S", fileModTime)
 
-    # Calculate hash
-    def get_file_md5(path):
-        hash_md5 = hashlib.md5()
+    # # Calculate hash
+    # def get_file_md5(path):
+    #     hash_md5 = hashlib.md5()
+    #     try:
+    #         with open(path, "rb") as f:
+    #             for chunk in iter(lambda: f.read(4096), b""):
+    #                 hash_md5.update(chunk)
+    #         return hash_md5.hexdigest()[:8]
+    #     except Exception as e:
+    #         print(f"Error calculating hash for {path}: {e}")
+    #         return "00000000"
+
+    def get_image_phash(file_path):
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
         try:
-            with open(path, "rb") as f:
-                for chunk in iter(lambda: f.read(4096), b""):
-                    hash_md5.update(chunk)
-            return hash_md5.hexdigest()[:8]
+            with Image.open(file_path) as img:
+                phash = imagehash.phash(img)
+                return str(phash)
         except Exception as e:
-            print(f"Error calculating hash for {path}: {e}")
-            return "00000000"
+            print(f"Error processing {file_path}: {e}")
+            # send2trash(file_path)
+            return None
 
     for key in structure:
         if key == 'foldername':
@@ -82,7 +96,7 @@ def renameAccExif(imageName, listEXIF, structure, listLength, index=1):
         elif key == 'originalname':
             parts.append(filename)
         elif key == 'hash':
-            parts.append(get_file_md5(imageName))
+            parts.append(get_image_phash(imageName))
 
     newname = '_'.join(parts) + file_extension
     return newname.replace('\x00', '')
