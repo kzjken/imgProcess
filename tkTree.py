@@ -205,6 +205,17 @@ def on_double_click(event):
     show_image(filepath, zoom=False)
     top.focus_set()
 
+# -------------------- 排序功能 --------------------
+def treeview_sort_column(tv, col, reverse=False):
+    l = [(tv.set(k, col), k) for k in tv.get_children('')]
+    try:
+        l.sort(key=lambda t: float(t[0]) if t[0] != "N/A" else float('-inf'), reverse=reverse)
+    except ValueError:
+        l.sort(key=lambda t: t[0], reverse=reverse)
+    for index, (val, k) in enumerate(l):
+        tv.move(k, '', index)
+    tv.heading(col, command=lambda: treeview_sort_column(tv, col, not reverse))
+
 # -------------------- 主窗口 --------------------
 root = tk.Tk()
 root.title("文件与EXIF信息列表")
@@ -253,6 +264,10 @@ tree.column("aperture", width=80, anchor="center")
 tree.column("datetime", width=160)
 tree.pack(fill=tk.BOTH, expand=True)
 tree.bind("<Double-1>", on_double_click)
+
+# 绑定列头排序
+for col in columns:
+    tree.heading(col, text=col, command=lambda _col=col: treeview_sort_column(tree, _col, False))
 
 # 进度条
 progress = ttk.Progressbar(root, orient="horizontal", mode="determinate")
