@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import Image, ImageTk, ExifTags
 import os
+import time
 
 # -------------------- 全局变量 --------------------
 filemap = {}        # Treeview item -> 文件路径
@@ -31,14 +32,14 @@ def get_exif_info(filepath):
         lens = exif.get("LensModel", "N/A")
         focal_length = exif.get("FocalLength", "N/A")
         aperture = exif.get("FNumber", "N/A")
-        datetime = exif.get("DateTimeOriginal", exif.get("DateTime", "N/A"))
+        datetime_val = exif.get("DateTimeOriginal", exif.get("DateTime", "N/A"))
 
         if isinstance(focal_length, tuple):
             focal_length = round(focal_length[0] / focal_length[1], 1)
         if isinstance(aperture, tuple):
             aperture = round(aperture[0] / aperture[1], 1)
 
-        return [camera, lens, focal_length, aperture, datetime]
+        return [camera, lens, focal_length, aperture, datetime_val]
     except Exception:
         return ["N/A"] * 5
 
@@ -46,7 +47,9 @@ def process_exif(batch_size=5):
     for _ in range(min(batch_size, len(pending_exif))):
         item, file = pending_exif.pop(0)
         exif_vals = get_exif_info(file)
-        tree.item(item, values=(os.path.basename(file), *exif_vals))
+        tree.item(item, values=(os.path.basename(file),
+                                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(file))),
+                                *exif_vals))
         progress["value"] += 1
     if pending_exif:
         root.after(50, process_exif)
@@ -78,14 +81,27 @@ def add_files_from_list(files):
         if file in filelist:
             continue
         filename = os.path.basename(file)
-        item = tree.insert("", tk.END, text="", values=(filename, "N/A", "N/A", "N/A", "N/A", "N/A"))
-        filemap[item] = file
-        filelist.append(file)
-        pending_files.append((item, file))
-        pending_exif.append((item, file))
+        ctime_val = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(file)))
+
+        # 判断是否加载 EXIF
+        if exif_var.get():
+            camera = lens = focal = aperture = datetime_val = "N/A"
+            item = tree.insert("", tk.END, text="", values=(filename, ctime_val, camera, lens, focal, aperture, datetime_val))
+            filemap[item] = file
+            filelist.append(file)
+            pending_files.append((item, file))
+            pending_exif.append((item, file))
+        else:
+            # EXIF 未勾选时，不加入 pending_exif
+            item = tree.insert("", tk.END, text="", values=(filename, ctime_val, "N/A", "N/A", "N/A", "N/A", "N/A"))
+            filemap[item] = file
+            filelist.append(file)
+            pending_files.append((item, file))
+
     progress["maximum"] = len(pending_files) + len(pending_exif)
     root.after(50, process_thumbnails)
-    root.after(50, process_exif)
+    if exif_var.get():
+        root.after(50, process_exif)
 
 def add_files():
     files = filedialog.askopenfilenames(filetypes=[("Image files", "*.jpg *.jpeg *.png *.tiff")])
@@ -101,6 +117,15 @@ def add_folder():
         files = [os.path.join(folder, f) for f in os.listdir(folder) if f.lower().endswith(exts)]
         add_files_from_list(files)
 
+# -------------------- EXIF Checkbox --------------------
+def on_exif_toggle():
+    if exif_var.get():
+        for item in tree.get_children():
+            file = filemap[item]
+            pending_exif.append((item, file))
+        progress["maximum"] = len(pending_files) + len(pending_exif)
+        process_exif()
+
 # -------------------- 双击预览 --------------------
 def on_double_click(event):
     item_id = tree.focus()
@@ -112,34 +137,35 @@ def on_double_click(event):
 
     top = tk.Toplevel(root)
     top.geometry(f"{PREVIEW_WIDTH}x{PREVIEW_HEIGHT}")
-    lbl = tk.Label(top)
-    lbl.pack(expand=True)
     top.title(os.path.basename(filepath))
 
+    canvas = tk.Canvas(top, width=PREVIEW_WIDTH, height=PREVIEW_HEIGHT)
+    canvas.pack(expand=True, fill=tk.BOTH)
+
     current_index = filelist.index(filepath)
-    zoomed = False  # 双击放大状态
+    zoomed = False
+    photo_id = None
+    start_x = start_y = 0
+    photo = None
+
+    def show_image(file, zoom=False):
+        nonlocal photo, photo_id
+        img = Image.open(file)
+        if not zoom:
+            img.thumbnail((PREVIEW_WIDTH, PREVIEW_HEIGHT))
+        photo = ImageTk.PhotoImage(img, master=top)
+        canvas.delete("all")
+        photo_id = canvas.create_image(PREVIEW_WIDTH//2, PREVIEW_HEIGHT//2, image=photo)
 
     def show_at_index(index):
         nonlocal current_index, zoomed
         if 0 <= index < len(filelist):
             current_index = index
             zoomed = False
-            show_image(filelist[current_index], top, lbl, zoomed=False)
-
-    def show_image(file, top_window, label, zoomed=False):
-        try:
-            img = Image.open(file)
-            if not zoomed:
-                img.thumbnail((PREVIEW_WIDTH, PREVIEW_HEIGHT))
-            photo = ImageTk.PhotoImage(img, master=top_window)
-            label.config(image=photo)
-            label.image = photo
-        except Exception as e:
-            print(f"显示图片失败: {e}")
+            show_image(filelist[current_index], zoom=False)
 
     def on_wheel(event):
-        delta = event.delta
-        if delta < 0:
+        if event.delta < 0:
             show_at_index(current_index + 1)
         else:
             show_at_index(current_index - 1)
@@ -147,17 +173,42 @@ def on_double_click(event):
     def toggle_zoom(event):
         nonlocal zoomed
         zoomed = not zoomed
-        show_image(filelist[current_index], top, lbl, zoomed=zoomed)
+        show_image(filelist[current_index], zoom=zoomed)
+
+    def start_drag(event):
+        nonlocal start_x, start_y
+        start_x = event.x
+        start_y = event.y
+
+    def do_drag(event):
+        nonlocal start_x, start_y
+        if photo_id is not None:
+            dx = event.x - start_x
+            dy = event.y - start_y
+            canvas.move(photo_id, dx, dy)
+            start_x = event.x
+            start_y = event.y
+
+    def on_left(event):
+        show_at_index(current_index - 1)
+
+    def on_right(event):
+        show_at_index(current_index + 1)
 
     top.bind("<MouseWheel>", on_wheel)
-    lbl.bind("<Double-Button-1>", toggle_zoom)
-    show_image(filepath, top, lbl, zoomed=False)
+    canvas.bind("<Double-Button-1>", toggle_zoom)
+    canvas.bind("<Button-1>", start_drag)
+    canvas.bind("<B1-Motion>", do_drag)
+    top.bind("<Left>", on_left)
+    top.bind("<Right>", on_right)
+
+    show_image(filepath, zoom=False)
     top.focus_set()
 
 # -------------------- 主窗口 --------------------
 root = tk.Tk()
 root.title("文件与EXIF信息列表")
-root.geometry("1100x700")
+root.geometry("1200x700")
 
 style = ttk.Style()
 style.configure("Treeview", rowheight=60)
@@ -175,18 +226,26 @@ btn_folder.pack(side=tk.LEFT, padx=5)
 btn_file = tk.Button(frame_top, text="增加文件", command=add_files)
 btn_file.pack(side=tk.LEFT, padx=5)
 
+# EXIF Checkbox
+exif_var = tk.BooleanVar(value=False)
+chk_exif = tk.Checkbutton(frame_top, text="加载EXIF", variable=exif_var, command=on_exif_toggle)
+chk_exif.pack(side=tk.LEFT, padx=5)
+
 # Treeview
-columns = ("filename", "camera", "lens", "focal", "aperture", "datetime")
+columns = ("filename", "ctime", "camera", "lens", "focal", "aperture", "datetime")
 tree = ttk.Treeview(root, columns=columns)
 tree.column("#0", width=60, anchor="center")
 tree.heading("#0", text="缩略图")
 tree.heading("filename", text="文件名")
+tree.heading("ctime", text="创建时间")
 tree.heading("camera", text="相机")
 tree.heading("lens", text="镜头")
 tree.heading("focal", text="焦距(mm)")
 tree.heading("aperture", text="光圈(F)")
 tree.heading("datetime", text="拍摄时间")
+
 tree.column("filename", width=180)
+tree.column("ctime", width=140)
 tree.column("camera", width=120)
 tree.column("lens", width=200)
 tree.column("focal", width=80, anchor="center")
@@ -195,7 +254,7 @@ tree.column("datetime", width=160)
 tree.pack(fill=tk.BOTH, expand=True)
 tree.bind("<Double-1>", on_double_click)
 
-# 进度条放在 Treeview 下方，拉长宽度
+# 进度条
 progress = ttk.Progressbar(root, orient="horizontal", mode="determinate")
 progress.pack(fill=tk.X, pady=5, padx=5)
 
