@@ -177,11 +177,37 @@ preview_Button.grid(row=5, column=2, sticky="e", padx=5, pady=5)
 process_Button = ttk.Button(mainframe, text='Execute', command=lambda: thread_it(executeBtn), state="disable")
 process_Button.grid(row=5, column=3, sticky="w", padx=5, pady=5)
 
-# ========================== Row 6: Log Window (Text+Scrollbar in a Frame) ==========================
+# ========================== Row 6: Treeview ==========================
+columns = ("filename", "ctime")
+tree = ttk.Treeview(mainframe, columns=columns, height=22)
+tree.grid(row=6, column=0, columnspan=4, sticky="nsew")
+
+# 设置列（不隐藏 #0）
+tree["columns"] = ("ctime",)
+tree.heading("#0", text="文件/文件夹")   # #0 列用来显示树形节点
+tree.heading("ctime", text="创建时间")
+
+tree.column("#0", width=200)
+tree.column("ctime", width=140)
+
+# 添加示例文件夹
+folder1 = tree.insert("", "end", text="文件夹 A", open=False)
+tree.insert(folder1, "end", text="file1.txt", values=("2024-01-01",))
+tree.insert(folder1, "end", text="file2.txt", values=("2024-02-01",))
+
+folder2 = tree.insert("", "end", text="文件夹 B", open=False)
+tree.insert(folder2, "end", text="image.png", values=("2024-03-01",))
+tree.insert(folder2, "end", text="data.csv", values=("2024-04-01",))
+
+# 还可以再嵌套子文件夹
+subfolder = tree.insert(folder2, "end", text="子文件夹 B1", open=False)
+tree.insert(subfolder, "end", text="nested.txt", values=("2024-05-01",))
+
+# ========================== Row 7: Log Window (Text+Scrollbar in a Frame) ==========================
 # Log area with vertical scrollbar
-ttk.Label(mainframe, text="Log:").grid(row=6, column=0, sticky=(N, E), padx=5, pady=10)
+ttk.Label(mainframe, text="Log:").grid(row=7, column=0, sticky=(N, E), padx=5, pady=10)
 log_frame = ttk.Frame(mainframe)
-log_frame.grid(row=6, column=1, columnspan=3, sticky="nsew", padx=5, pady=10)
+log_frame.grid(row=7, column=1, columnspan=3, sticky="nsew", padx=5, pady=10)
 log_text = Text(log_frame, width=90, height=22, state="disabled")
 log_text.pack(side=LEFT, fill=BOTH, expand=True)
 logText_scrollbar = Scrollbar(log_frame, orient="vertical", command=log_text.yview)
@@ -190,10 +216,10 @@ log_text.configure(yscrollcommand=logText_scrollbar.set)
 Font_UserChanged = ("Comic Sans MS", 9)
 log_text.configure(font=Font_UserChanged)
 
-# ========================== Row 7: Progress Bar ==========================
+# ========================== Row 8: Progress Bar ==========================
 progress_var = DoubleVar()
 progress_bar = ttk.Progressbar(mainframe, variable=progress_var, maximum=100, mode="determinate")
-progress_bar.grid(row=7, column=1, columnspan=3, sticky="ew", padx=5, pady=(0, 10))
+progress_bar.grid(row=8, column=1, columnspan=3, sticky="ew", padx=5, pady=(0, 10))
 progress_bar.grid_remove()  # Hide progress bar initially
 
 # Configure column and row weights for resizing
@@ -203,7 +229,7 @@ mainframe.columnconfigure(3, weight=0)
 mainframe.rowconfigure(6, weight=1)
 mainframe.columnconfigure(1, weight=1)
 mainframe.columnconfigure(2, weight=1)
-mainframe.rowconfigure(6, weight=1)
+mainframe.rowconfigure(7, weight=1)
 
 # Redirect print output to the log window
 pl = PrintLogger(log_text)

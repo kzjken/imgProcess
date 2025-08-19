@@ -201,6 +201,7 @@ def on_double_click(event):
     canvas.bind("<B1-Motion>", do_drag)
     top.bind("<Left>", on_left)
     top.bind("<Right>", on_right)
+    top.bind("<Up>", toggle_zoom)
 
     show_image(filepath, zoom=False)
     top.focus_set()
