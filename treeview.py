@@ -29,7 +29,7 @@ def populate_treeview(parent, path):
             # Folder entry: size empty
             mtime = format_mtime(full_path)
             node = tree.insert(parent, "end", text=item,
-                               values=(full_path, "Folder", mtime, ""))
+                               values=("Folder", mtime, "", full_path))
             populate_treeview(node, full_path)
         else:
             ext = os.path.splitext(item)[1].lower()
@@ -37,14 +37,17 @@ def populate_treeview(parent, path):
                 size = format_size(os.path.getsize(full_path))
                 mtime = format_mtime(full_path)
                 tree.insert(parent, "end", text=item,
-                            values=(full_path, ext.lstrip("."), mtime, size))
+                            values=(ext.lstrip("."), mtime, size, full_path))
 
 def load_directory(directory):
     if directory and os.path.isdir(directory):
         tree.delete(*tree.get_children())  # clear existing items
         root_node = tree.insert("", "end", text=directory,
-                                values=(directory, "Folder", format_mtime(directory), ""))
+                                values=("Folder", format_mtime(directory), "", directory), open=True)
         populate_treeview(root_node, directory)
+
+        # for child in tree.get_children(root_node):
+        #     tree.item(child, open=True)
         path_var.set(directory)
     else:
         messagebox.showerror("Error", f"Invalid path: {directory}")
@@ -66,7 +69,7 @@ def on_right_click(event):
     if not item_id:
         return
     tree.selection_set(item_id)
-    item_type = tree.item(item_id, "values")[1]
+    item_type = tree.item(item_id, "values")[0]  # Type is now first column
     if item_type == "Folder":
         folder_menu.post(event.x_root, event.y_root)
     else:
@@ -75,24 +78,24 @@ def on_right_click(event):
 # ==== Context menu: Folders ====
 def open_folder():
     item_id = tree.selection()[0]
-    path = tree.item(item_id, "values")[0]
+    path = tree.item(item_id, "values")[3]  # Full Path is now last column
     messagebox.showinfo("Folder Operation", f"Open Folder: {path}")
 
 def refresh_folder():
     item_id = tree.selection()[0]
-    path = tree.item(item_id, "values")[0]
+    path = tree.item(item_id, "values")[3]  # Full Path
     tree.delete(*tree.get_children(item_id))
     populate_treeview(item_id, path)
 
 # ==== Context menu: Images ====
 def open_image():
     item_id = tree.selection()[0]
-    path = tree.item(item_id, "values")[0]
+    path = tree.item(item_id, "values")[3]
     messagebox.showinfo("Image Operation", f"Open Image: {path}")
 
 def delete_image():
     item_id = tree.selection()[0]
-    path = tree.item(item_id, "values")[0]
+    path = tree.item(item_id, "values")[3]
     confirm = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete {path}?")
     if confirm:
         try:
@@ -117,8 +120,8 @@ path_entry.bind("<Return>", on_enter_path)
 btn = tk.Button(top_frame, text="Browse", command=select_directory)
 btn.pack(side=tk.LEFT, padx=5)
 
-# Treeview with 4 columns: Full Path, Type, Modified Time, Size
-tree = ttk.Treeview(root, columns=("fullpath", "type", "mtime", "size"), show="tree headings")
+# Treeview with columns: Type, Modified Time, Size, Full Path (Full Path last)
+tree = ttk.Treeview(root, columns=("type", "mtime", "size", "fullpath"), show="tree headings")
 tree.pack(fill=tk.BOTH, expand=True)
 
 tree.heading("#0", text="Name")
