@@ -108,6 +108,9 @@ def delete_image():
 root = tk.Tk()
 root.title("NamImager [Name Image]")
 
+root.state("zoomed")
+root.geometry("1200x700")
+
 # Frame for textbox + Browse button in one line
 top_frame = tk.Frame(root)
 top_frame.pack(fill=tk.X, padx=5, pady=5)
