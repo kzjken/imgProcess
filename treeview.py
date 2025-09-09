@@ -75,8 +75,23 @@ root.title("NamImager [Name Image]")
 btn = tk.Button(root, text="Browse", command=select_directory)
 btn.pack(pady=5)
 
-tree = ttk.Treeview(root, columns=("fullpath", "type"), show="tree")
+# Treeview with proper column setup
+tree = ttk.Treeview(
+    root,
+    columns=("fullpath", "type"),
+    show="tree headings"  # show both tree and headers
+)
 tree.pack(fill=tk.BOTH, expand=True)
+
+# Configure columns
+tree.heading("#0", text="Name")
+tree.column("#0", width=250, anchor="w")
+
+tree.heading("fullpath", text="Full Path")
+tree.column("fullpath", width=400, anchor="w")
+
+tree.heading("type", text="Type")
+tree.column("type", width=80, anchor="center")
 
 # Context menus
 folder_menu = tk.Menu(root, tearoff=0)
